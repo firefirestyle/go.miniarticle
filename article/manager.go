@@ -10,6 +10,7 @@ import (
 
 	"crypto/rand"
 
+	"github.com/firefirestyle/go.miniprop"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
@@ -26,7 +27,7 @@ func NewArticleManager(projectId string, kindArticle string, prefixOfId string, 
 }
 
 func (obj *ArticleManager) NewArticleFromArticleId(ctx context.Context, articleId string, sign string) (*Article, error) {
-	return obj.NewArticleFromGaeObjectKey(ctx, obj.NewGaeObjectKey(ctx, articleId, sign))
+	return obj.NewArticleFromGaeObjectKey(ctx, obj.NewGaeObjectKey(ctx, articleId, sign, ""))
 }
 
 func (obj *ArticleManager) NewArticleFromGaeObjectKey(ctx context.Context, key *datastore.Key) (*Article, error) {
@@ -50,10 +51,11 @@ func (obj *ArticleManager) NewArticleFromGaeObjectKey(ctx context.Context, key *
 	return obj.NewArticleFromGaeObject(ctx, k, &gaeObj), nil
 }
 
-func (obj *ArticleManager) NewArticleFromMemcache(ctx context.Context, articleId string) (*Article, error) {
+func (obj *ArticleManager) NewArticleFromMemcache(ctx context.Context, stringId string) (*Article, error) {
 	ret := new(Article)
 	ret.gaeObject = new(GaeObjectArticle)
-	ret.gaeObjectKey = obj.NewGaeObjectKey(ctx, articleId, "")
+	idInfo := obj.ExtractInfoFromStringId(stringId)
+	ret.gaeObjectKey = obj.NewGaeObjectKey(ctx, idInfo.ArticleId, idInfo.Sign, "")
 	ret.kind = obj.kindArticle
 	artObjSource, errGetFMem := memcache.Get(ctx, ret.gaeObjectKey.StringID())
 	if errGetFMem != nil {
@@ -75,16 +77,18 @@ func (obj *ArticleManager) NewArticleFromGaeObject(ctx context.Context, gaeKey *
 	return ret
 }
 
-func (obj *ArticleManager) NewArticle(ctx context.Context, userName string, parentId string) *Article {
+func (obj *ArticleManager) NewArticle(ctx context.Context, userName string, sign string) *Article {
 	created := time.Now()
 	var secretKey string
-	var artKey string
+	var articleId string
 	var key *datastore.Key
 	var art GaeObjectArticle
 	for {
 		secretKey = obj.makeRandomId() + obj.makeRandomId()
-		artKey = obj.makeArticleKey(userName, parentId, created, secretKey)
-		key = obj.NewGaeObjectKey(ctx, artKey, "")
+		articleId = obj.makeArticleId(userName, created, secretKey)
+		stringId := obj.makeStringId(articleId, sign)
+		//
+		key = obj.NewGaeObjectKey(ctx, stringId, sign, "")
 		err := datastore.Get(ctx, key, &art)
 		if err != nil {
 			break
@@ -97,11 +101,11 @@ func (obj *ArticleManager) NewArticle(ctx context.Context, userName string, pare
 	ret.gaeObjectKey = key
 	ret.gaeObject.ProjectId = obj.projectId
 	ret.gaeObject.UserName = userName
-	ret.gaeObject.Sign = parentId
+	ret.gaeObject.Sign = sign
 	ret.gaeObject.Created = created
 	ret.gaeObject.Updated = created
 	ret.gaeObject.SecretKey = secretKey
-	ret.gaeObject.ArticleId = artKey
+	ret.gaeObject.ArticleId = articleId
 	//
 	//
 	//
@@ -109,20 +113,41 @@ func (obj *ArticleManager) NewArticle(ctx context.Context, userName string, pare
 	return ret
 }
 
-func (obj *ArticleManager) NewGaeObjectKey(ctx context.Context, articleId string, kind string) *datastore.Key {
+func (obj *ArticleManager) NewGaeObjectKey(ctx context.Context, articleId string, sign string, kind string) *datastore.Key {
 	if kind == "" {
 		kind = obj.kindArticle
 	}
-	return datastore.NewKey(ctx, kind, articleId, 0, nil)
+	return datastore.NewKey(ctx, kind, obj.makeStringId(articleId, sign), 0, nil)
 }
 
 func (obj *ArticleManager) GetKind() string {
 	return obj.kindArticle
 }
-func (obj *ArticleManager) makeArticleKey(userName string, parentId string, created time.Time, secretKey string) string {
-	hashKey := obj.hashStr(fmt.Sprintf("%sv1e%s%s%s%s%d", obj.prefixOfId, secretKey, userName, userName, parentId, created.UnixNano()))
+
+func (obj *ArticleManager) makeArticleId(userName string, created time.Time, secretKey string) string {
+	hashKey := obj.hashStr(fmt.Sprintf("%sv1e%s%s%s%d", obj.prefixOfId, secretKey, userName, userName, created.UnixNano()))
 	userName64 := base64.StdEncoding.EncodeToString([]byte(userName))
-	return "" + obj.prefixOfId + "v1e" + hashKey + parentId + userName64
+	return "" + obj.prefixOfId + "v1e" + hashKey + userName64
+}
+
+func (obj *ArticleManager) makeStringId(articleId string, sign string) string {
+	propObj := miniprop.NewMiniProp()
+	propObj.SetString("i", articleId)
+	propObj.SetString("s", sign)
+	return string(propObj.ToJson())
+}
+
+type StringIdInfo struct {
+	ArticleId string
+	Sign      string
+}
+
+func (obj *ArticleManager) ExtractInfoFromStringId(stringId string) *StringIdInfo {
+	propObj := miniprop.NewMiniPropFromJson([]byte(stringId))
+	return &StringIdInfo{
+		ArticleId: propObj.GetString("i", ""),
+		Sign:      propObj.GetString("s", ""),
+	}
 }
 
 func (obj *ArticleManager) hash(v string) string {

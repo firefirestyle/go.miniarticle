@@ -224,11 +224,33 @@ func (obj *ArticleHandler) HandleBlobRequestToken(w http.ResponseWriter, r *http
 }
 
 func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
-
+	propObj := miniprop.NewMiniProp()
+	ctx := appengine.NewContext(r)
+	values := r.URL.Query()
+	key := values.Get("key")
+	keyInfo := obj.GetManager().ExtractInfoFromStringId(key)
+	Debug(ctx, "=====> get :: "+keyInfo.ArticleId+"::"+keyInfo.Sign+"::"+key)
+	artObj, err := obj.GetManager().GetArticleFromArticleId(ctx, keyInfo.ArticleId, keyInfo.Sign)
+	if err != nil {
+		Debug(ctx, "=====> get A")
+		HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, "not found article")
+		return
+	}
+	Debug(ctx, "=====> get :: B")
+	w.Write(artObj.ToJsonPublicOnly())
 }
 
 func (obj *ArticleHandler) HandleFind(w http.ResponseWriter, r *http.Request) {
+	propObj := miniprop.NewMiniProp()
+	ctx := appengine.NewContext(r)
+	values := r.URL.Query()
+	cursor := values.Get("cursor")
+	foundObj := obj.GetManager().FindArticleWithNewOrder(ctx, cursor, true)
 
+	propObj.SetPropStringList("", "keys", foundObj.ArticleIds)
+	propObj.SetPropString("", "cursorOne", foundObj.CursorOne)
+	propObj.SetPropString("", "cursorOne", foundObj.CursorNext)
+	w.Write(propObj.ToJson())
 }
 
 func Debug(ctx context.Context, message string) {

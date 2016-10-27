@@ -27,7 +27,7 @@ type GaeObjectArticle struct {
 	Tag       string `datastore:",noindex"`
 	Cont      string `datastore:",noindex"`
 	Info      string `datastore:",noindex"`
-	State     string
+	Type      string
 	Sign      string
 	ArticleId string
 	Created   time.Time
@@ -56,7 +56,7 @@ const (
 	TypeTag       = "Tag"
 	TypeCont      = "Cont"
 	TypeInfo      = "Info"
-	TypeState     = "State"
+	TypeType      = "Type"
 	TypeSign      = "Sign"
 	TypeArticleId = "ArticleId"
 	TypeCreated   = "Created"
@@ -66,15 +66,13 @@ const (
 )
 
 func (obj *Article) updateMemcache(ctx context.Context) error {
-	userObjMemSource, err_toJson := obj.ToJson()
-	if err_toJson == nil {
-		userObjMem := &memcache.Item{
-			Key:   obj.gaeObjectKey.StringID(),
-			Value: []byte(userObjMemSource), //
-		}
-		memcache.Set(ctx, userObjMem)
+	userObjMemSource := obj.ToJson()
+	userObjMem := &memcache.Item{
+		Key:   obj.gaeObjectKey.StringID(),
+		Value: []byte(userObjMemSource), //
 	}
-	return err_toJson
+	memcache.Set(ctx, userObjMem)
+	return nil
 }
 
 //
@@ -96,7 +94,7 @@ func (obj *Article) ToMap() map[string]interface{} {
 		TypeTag:       obj.gaeObject.Tag,      //
 		TypeCont:      obj.gaeObject.Cont,
 		TypeInfo:      obj.gaeObject.Info,
-		TypeState:     obj.gaeObject.State,
+		TypeType:      obj.gaeObject.Type,
 		TypeSign:      obj.gaeObject.ProjectId,
 		TypeArticleId: obj.gaeObject.ArticleId,
 		TypeCreated:   obj.gaeObject.Created.UnixNano(),
@@ -106,9 +104,16 @@ func (obj *Article) ToMap() map[string]interface{} {
 	}
 }
 
-func (obj *Article) ToJson() (string, error) {
-	vv, e := json.Marshal(obj.ToMap())
-	return string(vv), e
+func (obj *Article) ToJson() []byte {
+	vv, _ := json.Marshal(obj.ToMap())
+	return vv
+}
+
+func (obj *Article) ToJsonPublicOnly() []byte {
+	v := obj.ToMap()
+	delete(v, TypeSecretKey)
+	vv, _ := json.Marshal(v)
+	return vv
 }
 
 //
@@ -124,7 +129,7 @@ func (userObj *Article) SetParamFromsMap(v map[string]interface{}) error {
 	userObj.gaeObject.Tag = propObj.GetString(TypeTag, "")
 	userObj.gaeObject.Cont = propObj.GetString(TypeCont, "")
 	userObj.gaeObject.Info = propObj.GetString(TypeInfo, "")
-	userObj.gaeObject.State = propObj.GetString(TypeState, "")
+	userObj.gaeObject.Type = propObj.GetString(TypeType, "")
 	userObj.gaeObject.Sign = propObj.GetString(TypeSign, "")
 	userObj.gaeObject.ArticleId = propObj.GetString(TypeArticleId, "")
 	userObj.gaeObject.Created = propObj.GetTime(TypeCreated, time.Now()) //srcCreated
@@ -213,11 +218,11 @@ func (obj *Article) SetCont(v string) {
 }
 
 func (obj *Article) GetState() string {
-	return obj.gaeObject.State
+	return obj.gaeObject.Type
 }
 
 func (obj *Article) SetState(v string) {
-	obj.gaeObject.State = v
+	obj.gaeObject.Type = v
 }
 
 func (obj *Article) GetParentId() string {
@@ -256,14 +261,14 @@ func (obj *Article) saveOnDB(ctx context.Context) error {
 }
 
 func (mgrObj *ArticleManager) SaveOnOtherDB(ctx context.Context, obj *Article, kind string) error {
-	_, err := datastore.Put(ctx, mgrObj.NewGaeObjectKey(ctx, obj.GetArticleId(), kind), obj.gaeObject)
+	_, err := datastore.Put(ctx, mgrObj.NewGaeObjectKey(ctx, obj.GetArticleId(), obj.gaeObject.Sign, kind), obj.gaeObject)
 	return err
 }
 
 func (mgrObj *ArticleManager) DeleteFromArticleId(ctx context.Context, articleId string, sign string) error {
-	key := mgrObj.NewGaeObjectKey(ctx, articleId, "")
+	key := mgrObj.NewGaeObjectKey(ctx, articleId, sign, mgrObj.GetKind())
 	memcache.Delete(ctx, key.StringID())
-	return datastore.Delete(ctx, mgrObj.NewGaeObjectKey(ctx, articleId, sign))
+	return datastore.Delete(ctx, mgrObj.NewGaeObjectKey(ctx, articleId, sign, mgrObj.GetKind()))
 }
 
 func (obj *ArticleManager) newCursorFromSrc(cursorSrc string) *datastore.Cursor {
@@ -292,84 +297,10 @@ func (obj *ArticleManager) GetArticleFromArticleIdOnQuery(ctx context.Context, a
 	q := datastore.NewQuery(obj.kindArticle)
 	q = q.Filter("ProjectId =", obj.projectId)
 	q = q.Filter("ArticleId =", articleId)
-	arts, _, _ := obj.FindArticleFromQuery(ctx, q, "")
-	if len(arts) > 0 {
-		return arts[0], nil
+	arts := obj.FindArticleFromQuery(ctx, q, "", false)
+	if len(arts.Articles) > 0 {
+		return arts.Articles[0], nil
 	} else {
 		return nil, errors.New("--")
 	}
-}
-
-/*
-https://cloud.google.com/appengine/docs/go/config/indexconfig#updating_indexes
-*/
-func (obj *ArticleManager) FindArticleFromUserName(ctx context.Context, userName string, parentId string, state string, cursorSrc string) ([]*Article, string, string) {
-	q := datastore.NewQuery(obj.kindArticle)
-	q = q.Filter("ProjectId =", obj.projectId)
-	q = q.Filter("UserName =", userName) ////
-	q = q.Filter("ParentId =", parentId)
-	if state != "" {
-		q = q.Filter("State =", ArticleStatePublic) //
-	}
-	q = q.Order("-Updated").Limit(obj.limitOfFinding)
-	return obj.FindArticleFromQuery(ctx, q, cursorSrc)
-}
-
-func (obj *ArticleManager) FindArticleFromTarget(ctx context.Context, targetName string, parentId string, state string, cursorSrc string) ([]*Article, string, string) {
-	q := datastore.NewQuery(obj.kindArticle)
-	q = q.Filter("ProjectId =", obj.projectId)
-	q = q.Filter("Target =", targetName) ////
-	q = q.Filter("ParentId =", parentId)
-	if state != "" {
-		q = q.Filter("State =", ArticleStatePublic) //
-	}
-	q = q.Order("-Updated").Limit(obj.limitOfFinding)
-	return obj.FindArticleFromQuery(ctx, q, cursorSrc)
-}
-
-func (obj *ArticleManager) FindArticleWithNewOrder(ctx context.Context, parentId string, cursorSrc string) ([]*Article, string, string) {
-	q := datastore.NewQuery(obj.kindArticle)
-
-	q = q.Filter("ProjectId =", obj.projectId)
-
-	q = q.Filter("ParentId =", parentId)
-
-	//if state != ""
-	{
-		q = q.Filter("State =", ArticleStatePublic) //
-	}
-	q = q.Order("-Updated").Limit(obj.limitOfFinding)
-
-	return obj.FindArticleFromQuery(ctx, q, cursorSrc)
-}
-
-func (obj *ArticleManager) FindArticleFromQuery(ctx context.Context, q *datastore.Query, cursorSrc string) ([]*Article, string, string) {
-	cursor := obj.newCursorFromSrc(cursorSrc)
-	if cursor != nil {
-		q = q.Start(*cursor)
-	}
-	q = q.KeysOnly()
-	founds := q.Run(ctx)
-
-	var retUser []*Article
-
-	var cursorNext string = ""
-	var cursorOne string = ""
-	for i := 0; ; i++ {
-		key, err := founds.Next(nil)
-
-		if err != nil || err == datastore.Done {
-			break
-		} else {
-			userObj, errNewUserObj := obj.NewArticleFromGaeObjectKey(ctx, key)
-			if errNewUserObj == nil {
-				retUser = append(retUser, userObj)
-			}
-		}
-		if i == 0 {
-			cursorOne = obj.makeCursorSrc(founds)
-		}
-	}
-	cursorNext = obj.makeCursorSrc(founds)
-	return retUser, cursorOne, cursorNext
 }
