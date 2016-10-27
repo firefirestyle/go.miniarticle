@@ -228,9 +228,17 @@ func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 	values := r.URL.Query()
 	key := values.Get("key")
-	keyInfo := obj.GetManager().ExtractInfoFromStringId(key)
-	Debug(ctx, "=====> get :: "+keyInfo.ArticleId+"::"+keyInfo.Sign+"::"+key)
-	artObj, err := obj.GetManager().GetArticleFromArticleId(ctx, keyInfo.ArticleId, keyInfo.Sign)
+	articleId := values.Get("articleId")
+	sign := values.Get("sign")
+	//
+	if key != "" {
+		keyInfo := obj.GetManager().ExtractInfoFromStringId(key)
+		Debug(ctx, "=====> get :: "+keyInfo.ArticleId+"::"+keyInfo.Sign+"::"+key)
+		articleId = keyInfo.ArticleId
+		sign = keyInfo.Sign
+	}
+	Debug(ctx, "==ss===> "+articleId+"::"+sign)
+	artObj, err := obj.GetManager().GetArticleFromArticleId(ctx, articleId, sign)
 	if err != nil {
 		Debug(ctx, "=====> get A")
 		HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, "not found article")

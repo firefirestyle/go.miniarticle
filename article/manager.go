@@ -86,9 +86,10 @@ func (obj *ArticleManager) NewArticle(ctx context.Context, userName string, sign
 	for {
 		secretKey = obj.makeRandomId() + obj.makeRandomId()
 		articleId = obj.makeArticleId(userName, created, secretKey)
-		stringId := obj.makeStringId(articleId, sign)
+		//stringId := obj.makeStringId(articleId, sign)
 		//
-		key = obj.NewGaeObjectKey(ctx, stringId, sign, "")
+		Debug(ctx, "<NewArticle>"+articleId+"::"+sign)
+		key = obj.NewGaeObjectKey(ctx, articleId, sign, "")
 		err := datastore.Get(ctx, key, &art)
 		if err != nil {
 			break
@@ -188,4 +189,8 @@ func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Art
 	}
 	obj.DeleteFromArticleId(ctx, artObj.GetArticleId(), artObj.GetParentId())
 	return nil
+}
+
+func Debug(ctx context.Context, message string) {
+	log.Infof(ctx, message)
 }

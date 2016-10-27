@@ -255,6 +255,7 @@ func (obj *Article) SetUpdated(v time.Time) {
 // ArticleManager
 
 func (obj *Article) saveOnDB(ctx context.Context) error {
+	Debug(ctx, "<saveOnDB> "+obj.gaeObjectKey.StringID())
 	_, err := datastore.Put(ctx, obj.gaeObjectKey, obj.gaeObject)
 	obj.updateMemcache(ctx)
 	return err
