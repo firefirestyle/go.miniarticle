@@ -95,7 +95,7 @@ func (obj *Article) ToMap() map[string]interface{} {
 		TypeCont:      obj.gaeObject.Cont,
 		TypeInfo:      obj.gaeObject.Info,
 		TypeType:      obj.gaeObject.Type,
-		TypeSign:      obj.gaeObject.ProjectId,
+		TypeSign:      obj.gaeObject.Sign,
 		TypeArticleId: obj.gaeObject.ArticleId,
 		TypeCreated:   obj.gaeObject.Created.UnixNano(),
 		TypeUpdated:   obj.gaeObject.Updated.UnixNano(),
