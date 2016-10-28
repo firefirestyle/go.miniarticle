@@ -82,10 +82,10 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 func HandleError(w http.ResponseWriter, r *http.Request, outputProp *miniprop.MiniProp, errorCode int, errorMessage string) {
 	//
 	//
-	if outputProp.GetInt("errorCode", 0) != 0 {
+	if errorCode != 0 {
 		outputProp.SetInt("errorCode", errorCode)
 	}
-	if outputProp.GetString("errorMessage", "") != "" {
+	if errorMessage != "" {
 		outputProp.SetString("errorMessage", errorMessage)
 	}
 	w.WriteHeader(http.StatusBadRequest)
@@ -230,21 +230,27 @@ func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	key := values.Get("key")
 	articleId := values.Get("articleId")
 	sign := values.Get("sign")
+	mode := values.Get("m")
 	//
 	if key != "" {
 		keyInfo := obj.GetManager().ExtractInfoFromStringId(key)
-		Debug(ctx, "=====> get :: "+keyInfo.ArticleId+"::"+keyInfo.Sign+"::"+key)
 		articleId = keyInfo.ArticleId
 		sign = keyInfo.Sign
 	}
-	Debug(ctx, "==ss===> "+articleId+"::"+sign)
-	artObj, err := obj.GetManager().GetArticleFromArticleId(ctx, articleId, sign)
+	var artObj *article.Article
+	var err error
+	if mode != "q" {
+		artObj, err = obj.GetManager().GetArticleFromArticleId(ctx, articleId, sign)
+	} else {
+		artObj, err = obj.GetManager().GetArticleFromArticleIdOnQuery(ctx, articleId)
+	}
 	if err != nil {
-		Debug(ctx, "=====> get A")
 		HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, "not found article")
 		return
 	}
-	Debug(ctx, "=====> get :: B")
+	if mode != "query" {
+		w.Header().Set("Cache-Control", "public, max-age=2592000")
+	}
 	w.Write(artObj.ToJsonPublicOnly())
 }
 
