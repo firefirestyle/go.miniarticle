@@ -20,13 +20,13 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	//
 	//
 	outputProp := miniprop.NewMiniProp()
-	{
-		err := obj.onEvents.OnNewArtCalled(w, r, obj, inputProp, outputProp)
-		if nil != err {
-			HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, err.Error())
-			return
-		}
+	errCall := obj.onEvents.OnNewRequest(w, r, obj, inputProp, outputProp)
+	if nil != errCall {
+		obj.onEvents.OnNewArtFailed(w, r, obj, inputProp, outputProp)
+		HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errCall.Error())
+		return
 	}
+	//
 	artObj := obj.GetManager().NewArticle(ctx, ownerName, "")
 	artObj.SetTitle(title)
 	artObj.SetTarget(target)
@@ -45,6 +45,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 			if nil != obj.GetManager().DeleteFromArticleId(ctx, artObj.GetArticleId(), "") {
 				Debug(ctx, "<GOMIDATA>articleId="+artObj.GetArticleId())
 			}
+			obj.onEvents.OnNewArtFailed(w, r, obj, inputProp, outputProp)
 			HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnSc.Error())
 			return
 		}

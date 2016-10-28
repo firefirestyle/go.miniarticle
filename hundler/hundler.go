@@ -39,11 +39,11 @@ type ArticleHandlerManagerConfig struct {
 }
 
 type ArticleHandlerOnEvent struct {
-	OnNewArtCalled  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnNewRequest  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	OnNewArtFailed  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
 	OnNewArtSuccess func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	//
-	OnUpdateArtCalled  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnUpdateRequest  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	OnUpdateArtFailed  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
 	OnUpdateArtSuccess func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	//
@@ -55,8 +55,8 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 	artMana := article.NewArticleManager(config.ProjectId, config.ArticleKind, "art-", 10)
 	//
 	//
-	if onEvents.OnNewArtCalled == nil {
-		onEvents.OnNewArtCalled = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
+	if onEvents.OnNewRequest == nil {
+		onEvents.OnNewRequest = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
 			return nil
 		}
 	}
@@ -71,8 +71,8 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 		}
 	}
 	//
-	if onEvents.OnUpdateArtCalled == nil {
-		onEvents.OnUpdateArtCalled = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
+	if onEvents.OnUpdateRequest == nil {
+		onEvents.OnUpdateRequest = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
 			return nil
 		}
 	}
@@ -98,7 +98,7 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 			Kind:        config.BlobKind,
 			CallbackUrl: config.BlobCallbackUrl,
 		}, blobhandler.BlobHandlerOnEvent{
-			OnRequest: func(w http.ResponseWriter, r *http.Request, input *miniprop.MiniProp, blob *blobhandler.BlobHandler) (string, map[string]string, error) {
+			OnBlobRequest: func(w http.ResponseWriter, r *http.Request, input *miniprop.MiniProp, blob *blobhandler.BlobHandler) (string, map[string]string, error) {
 				return onEvents.OnBlobRequest(w, r, input, blob)
 			},
 		})
