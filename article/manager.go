@@ -26,7 +26,7 @@ func NewArticleManager(projectId string, kindArticle string, prefixOfId string, 
 	return ret
 }
 
-func (obj *ArticleManager) NewArticleFromArticleId(ctx context.Context, articleId string, sign string) (*Article, error) {
+func (obj *ArticleManager) GetArticleFromArticleId(ctx context.Context, articleId string, sign string) (*Article, error) {
 	return obj.NewArticleFromGaeObjectKey(ctx, obj.NewGaeObjectKey(ctx, articleId, sign, ""))
 }
 
@@ -74,6 +74,20 @@ func (obj *ArticleManager) NewArticleFromGaeObject(ctx context.Context, gaeKey *
 	//
 	//
 
+	return ret
+}
+
+func (obj *ArticleManager) NewArticleFromArticle(ctx context.Context, baseArtObj *Article, sign string) *Article {
+	//
+	ret := new(Article)
+	ret.kind = obj.kindArticle
+	ret.gaeObject = &GaeObjectArticle{}
+	ret.gaeObjectKey = obj.NewGaeObjectKey(ctx, baseArtObj.GetArticleId(), sign, "")
+
+	//
+	baseArtData := baseArtObj.ToMap()
+	baseArtData[TypeSign] = sign
+	ret.SetParamFromsMap(baseArtData)
 	return ret
 }
 
@@ -175,14 +189,8 @@ func (obj *ArticleManager) SaveOnDB(ctx context.Context, artObj *Article) error 
 
 func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Article) error {
 	sign := strconv.Itoa(time.Now().Nanosecond())
-	nextArObj, nextArtErr := obj.NewArticleFromArticleId(ctx, artObj.GetArticleId(), sign)
-	if nextArtErr != nil {
-		return nextArtErr
-	}
-	usrObjData := artObj.ToMap()
-	usrObjData[TypeSign] = sign
-	usrObjData[TypeUpdated] = artObj.GetUpdated().UnixNano()
-	nextArObj.SetParamFromsMap(usrObjData)
+	nextArObj := obj.NewArticleFromArticle(ctx, artObj, sign)
+	nextArObj.SetUpdated(time.Now())
 	saveErr := nextArObj.saveOnDB(ctx)
 	if saveErr != nil {
 		return saveErr

@@ -290,10 +290,6 @@ func (obj *ArticleManager) makeCursorSrc(founds *datastore.Iterator) string {
 	}
 }
 
-func (obj *ArticleManager) GetArticleFromArticleId(ctx context.Context, articleId string, sign string) (*Article, error) {
-	return obj.NewArticleFromArticleId(ctx, articleId, sign)
-}
-
 func (obj *ArticleManager) GetArticleFromArticleIdOnQuery(ctx context.Context, articleId string) (*Article, error) {
 	q := datastore.NewQuery(obj.kindArticle)
 	q = q.Filter("ProjectId =", obj.projectId)
