@@ -22,14 +22,14 @@ func (obj *ArticleHandler) HandleUpdate(w http.ResponseWriter, r *http.Request) 
 	//
 	//
 	outputProp := miniprop.NewMiniProp()
-	//
+
 	//
 	if articleId == "" {
 		HandleError(w, r, outputProp, ErrorCodeNotFoundArticleId, "Not Found Article")
 		return
 	}
 
-	errOnGe := obj.onEvents.OnNewArtCalled(w, r, obj, inputProp, outputProp)
+	errOnGe := obj.onEvents.OnUpdateArtCalled(w, r, obj, inputProp, outputProp)
 	if nil != errOnGe {
 		HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnGe.Error())
 		return
@@ -50,11 +50,12 @@ func (obj *ArticleHandler) HandleUpdate(w http.ResponseWriter, r *http.Request) 
 	//
 	errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
 	if errSave != nil {
+		obj.onEvents.OnUpdateArtFailed(w, r, obj, inputProp, outputProp)
 		HandleError(w, r, outputProp, ErrorCodeFailedToSave, errSave.Error())
 		return
 	} else {
 		propObj.SetPropString("", "articleId", artObj.GetArticleId())
-		errOnSc := obj.onEvents.OnNewArtSuccess(w, r, obj, inputProp, outputProp)
+		errOnSc := obj.onEvents.OnUpdateArtSuccess(w, r, obj, inputProp, outputProp)
 		if nil != errOnSc {
 			HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnSc.Error())
 			return

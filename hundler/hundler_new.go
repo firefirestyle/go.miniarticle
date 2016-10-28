@@ -3,11 +3,8 @@ package hundler
 import (
 	"net/http"
 
-	"google.golang.org/appengine"
-
-	//	"github.com/firefirestyle/go.miniarticle/article"
-	//	"github.com/firefirestyle/go.miniblob"
 	"github.com/firefirestyle/go.miniprop"
+	"google.golang.org/appengine"
 )
 
 func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +35,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	//
 	errSave := obj.GetManager().SaveOnDB(ctx, artObj)
 	if errSave != nil {
+		obj.onEvents.OnNewArtFailed(w, r, obj, inputProp, outputProp)
 		HandleError(w, r, outputProp, ErrorCodeFailedToSave, errSave.Error())
 		return
 	} else {
