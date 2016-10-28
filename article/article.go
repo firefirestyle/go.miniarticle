@@ -300,8 +300,10 @@ func (obj *ArticleManager) GetArticleFromArticleIdOnQuery(ctx context.Context, a
 	q = q.Filter("ArticleId =", articleId)
 	arts := obj.FindArticleFromQuery(ctx, q, "", false)
 	if len(arts.Articles) > 0 {
+		Debug(ctx, "======> A")
 		return arts.Articles[0], nil
 	} else {
+		Debug(ctx, "======> B : "+obj.projectId+" : "+articleId)
 		return nil, errors.New("--")
 	}
 }

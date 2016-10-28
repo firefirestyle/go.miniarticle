@@ -248,7 +248,7 @@ func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 		HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, "not found article")
 		return
 	}
-	if mode != "query" {
+	if mode != "q" {
 		w.Header().Set("Cache-Control", "public, max-age=2592000")
 	}
 	w.Write(artObj.ToJsonPublicOnly())

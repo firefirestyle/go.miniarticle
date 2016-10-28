@@ -71,7 +71,7 @@ func (obj *ArticleManager) FindArticleFromQuery(ctx context.Context, q *datastor
 			break
 		} else {
 			articleIds = append(articleIds, key.StringID())
-			if keyOnly != false {
+			if keyOnly == false {
 				userObj, errNewUserObj := obj.NewArticleFromGaeObjectKey(ctx, key)
 				if errNewUserObj == nil {
 					retUser = append(retUser, userObj)
