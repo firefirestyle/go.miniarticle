@@ -45,15 +45,12 @@ type ArticleHandlerOnEvent struct {
 	OnUpdateArtCalled  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	OnUpdateArtFailed  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
 	OnUpdateArtSuccess func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	//
+	OnBlobRequest func(http.ResponseWriter, *http.Request, *miniprop.MiniProp, *miniblob.BlobHandler) (string, map[string]string, error)
 }
 
 func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOnEvent) *ArticleHandler {
-	blobHundler := miniblob.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
-		miniblob.BlobManagerConfig{
-			ProjectId:   config.ProjectId,
-			Kind:        config.BlobKind,
-			CallbackUrl: config.BlobCallbackUrl,
-		}, miniblob.BlobHandlerOnEvent{})
+
 	artMana := article.NewArticleManager(config.ProjectId, config.ArticleKind, "art-", 10)
 	//
 	//
@@ -88,6 +85,22 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 			return nil
 		}
 	}
+	//
+	if onEvents.OnBlobRequest == nil {
+		onEvents.OnBlobRequest = func(http.ResponseWriter, *http.Request, *miniprop.MiniProp, *miniblob.BlobHandler) (string, map[string]string, error) {
+			return "dummy", map[string]string{}, nil
+		}
+	}
+	blobHundler := miniblob.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
+		miniblob.BlobManagerConfig{
+			ProjectId:   config.ProjectId,
+			Kind:        config.BlobKind,
+			CallbackUrl: config.BlobCallbackUrl,
+		}, miniblob.BlobHandlerOnEvent{
+			OnRequest: func(w http.ResponseWriter, r *http.Request, input *miniprop.MiniProp, blob *miniblob.BlobHandler) (string, map[string]string, error) {
+				return onEvents.OnBlobRequest(w, r, input, blob)
+			},
+		})
 	return &ArticleHandler{
 		projectId:   config.ProjectId,
 		articleKind: config.ArticleKind,
