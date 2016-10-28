@@ -8,7 +8,8 @@ import (
 	"io/ioutil"
 
 	"github.com/firefirestyle/go.miniarticle/article"
-	"github.com/firefirestyle/go.miniblob"
+	miniblob "github.com/firefirestyle/go.miniblob/blob"
+	blobhandler "github.com/firefirestyle/go.miniblob/handler"
 	"github.com/firefirestyle/go.miniprop"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
@@ -25,7 +26,7 @@ type ArticleHandler struct {
 	articleKind string
 	blobKind    string
 	artMana     *article.ArticleManager
-	blobHundler *miniblob.BlobHandler
+	blobHundler *blobhandler.BlobHandler
 	onEvents    ArticleHandlerOnEvent
 }
 
@@ -46,7 +47,7 @@ type ArticleHandlerOnEvent struct {
 	OnUpdateArtFailed  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
 	OnUpdateArtSuccess func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	//
-	OnBlobRequest func(http.ResponseWriter, *http.Request, *miniprop.MiniProp, *miniblob.BlobHandler) (string, map[string]string, error)
+	OnBlobRequest func(http.ResponseWriter, *http.Request, *miniprop.MiniProp, *blobhandler.BlobHandler) (string, map[string]string, error)
 }
 
 func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOnEvent) *ArticleHandler {
@@ -87,17 +88,17 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 	}
 	//
 	if onEvents.OnBlobRequest == nil {
-		onEvents.OnBlobRequest = func(http.ResponseWriter, *http.Request, *miniprop.MiniProp, *miniblob.BlobHandler) (string, map[string]string, error) {
+		onEvents.OnBlobRequest = func(http.ResponseWriter, *http.Request, *miniprop.MiniProp, *blobhandler.BlobHandler) (string, map[string]string, error) {
 			return "dummy", map[string]string{}, nil
 		}
 	}
-	blobHundler := miniblob.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
+	blobHundler := blobhandler.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
 		miniblob.BlobManagerConfig{
 			ProjectId:   config.ProjectId,
 			Kind:        config.BlobKind,
 			CallbackUrl: config.BlobCallbackUrl,
-		}, miniblob.BlobHandlerOnEvent{
-			OnRequest: func(w http.ResponseWriter, r *http.Request, input *miniprop.MiniProp, blob *miniblob.BlobHandler) (string, map[string]string, error) {
+		}, blobhandler.BlobHandlerOnEvent{
+			OnRequest: func(w http.ResponseWriter, r *http.Request, input *miniprop.MiniProp, blob *blobhandler.BlobHandler) (string, map[string]string, error) {
 				return onEvents.OnBlobRequest(w, r, input, blob)
 			},
 		})
