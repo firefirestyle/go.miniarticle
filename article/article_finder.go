@@ -3,8 +3,6 @@ package article
 import (
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
-	//	"google.golang.org/appengine/log"
-	//"google.golang.org/appengine/blobstore"
 )
 
 /*

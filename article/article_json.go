@@ -40,10 +40,6 @@ func (obj *Article) ToJsonPublicOnly() []byte {
 	return vv
 }
 
-//
-// func (userObj *User) SetUserFromsMap(ctx context.Context, v map[string]interface{}) {
-//	propObj := miniprop.NewMiniPropFromMap(v)
-//
 func (userObj *Article) SetParamFromsMap(v map[string]interface{}) error {
 	propObj := miniprop.NewMiniPropFromMap(v)
 	//
@@ -63,6 +59,7 @@ func (userObj *Article) SetParamFromsMap(v map[string]interface{}) error {
 
 	return nil
 }
+
 func (userObj *Article) SetParamFromsJson(ctx context.Context, source string) error {
 	v := make(map[string]interface{})
 	e := json.Unmarshal([]byte(source), &v)
