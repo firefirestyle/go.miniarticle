@@ -50,7 +50,11 @@ func (obj *ArticleHandler) GetManager() *article.ArticleManager {
 
 func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOnEvent) *ArticleHandler {
 	blobHundler := miniblob.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
-		miniblob.BlobManagerConfig{}, miniblob.BlobHandlerOnEvent{})
+		miniblob.BlobManagerConfig{
+			ProjectId:   config.ProjectId,
+			Kind:        config.BlobKind,
+			CallbackUrl: config.BlobCallbackUrl,
+		}, miniblob.BlobHandlerOnEvent{})
 	artMana := article.NewArticleManager(config.ProjectId, config.ArticleKind, "art-", 10)
 	//
 	//
@@ -160,6 +164,7 @@ func (obj *ArticleHandler) HandleUpdate(w http.ResponseWriter, r *http.Request) 
 	title := inputProp.GetString("title", "")
 	target := inputProp.GetString("target", "")
 	content := inputProp.GetString("content", "")
+	tags := inputProp.GetPropStringList("", "tags", make([]string, 0))
 	//
 	//
 	outputProp := miniprop.NewMiniProp()
@@ -186,6 +191,7 @@ func (obj *ArticleHandler) HandleUpdate(w http.ResponseWriter, r *http.Request) 
 	artObj.SetTitle(title)
 	artObj.SetTarget(target)
 	artObj.SetCont(content)
+	artObj.SetTags(tags)
 	//
 	//
 	errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
@@ -202,25 +208,6 @@ func (obj *ArticleHandler) HandleUpdate(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusOK)
 		w.Write(propObj.ToJson())
 	}
-}
-
-// HandleBlobRequestTokenFromParams
-func (obj *ArticleHandler) HandleBlobRequestToken(w http.ResponseWriter, r *http.Request) {
-	//
-	// load param from json
-	var inputProp *miniprop.MiniProp = nil
-	{
-		v, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			inputProp = miniprop.NewMiniProp()
-		} else {
-			inputProp = miniprop.NewMiniPropFromJson(v)
-		}
-	}
-	articleId := inputProp.GetString("articleId", "")
-	dir := inputProp.GetString("dir", "")
-	name := inputProp.GetString("name", "")
-	obj.blobHundler.HandleBlobRequestTokenFromParams(w, r, "/art/"+articleId+"/"+dir, name)
 }
 
 func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
@@ -267,6 +254,27 @@ func (obj *ArticleHandler) HandleFind(w http.ResponseWriter, r *http.Request) {
 	w.Write(propObj.ToJson())
 }
 
+// HandleBlobRequestTokenFromParams
+func (obj *ArticleHandler) HandleBlobRequestToken(w http.ResponseWriter, r *http.Request) {
+	//
+	// load param from json
+	articleId := r.URL.Query().Get("articleId")
+	dir := r.URL.Query().Get("dir")
+	name := r.URL.Query().Get("file")
+	//
+	// todo check articleId
+
+	//
+	//
+	obj.blobHundler.HandleBlobRequestTokenFromParams(w, r, "/art/"+articleId+"/"+dir, name)
+}
+
+func (obj *ArticleHandler) HandleBlobUpdated(w http.ResponseWriter, r *http.Request) {
+	//
+	ctx := appengine.NewContext(r)
+	Debug(ctx, "callbeck AAAA")
+	obj.blobHundler.HandleUploaded(w, r)
+}
 func Debug(ctx context.Context, message string) {
 	log.Infof(ctx, message)
 }

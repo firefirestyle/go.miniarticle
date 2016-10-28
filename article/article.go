@@ -91,7 +91,7 @@ func (obj *Article) ToMap() map[string]interface{} {
 		TypeProjectId: obj.gaeObject.ProjectId,
 		TypeUserName:  obj.gaeObject.UserName, //
 		TypeTitle:     obj.gaeObject.Title,    //
-		TypeTag:       obj.gaeObject.Tag,      //
+		TypeTag:       obj.GetTags(),          //
 		TypeCont:      obj.gaeObject.Cont,
 		TypeInfo:      obj.gaeObject.Info,
 		TypeType:      obj.gaeObject.Type,
@@ -126,7 +126,7 @@ func (userObj *Article) SetParamFromsMap(v map[string]interface{}) error {
 	userObj.gaeObject.ProjectId = propObj.GetString(TypeProjectId, "")
 	userObj.gaeObject.UserName = propObj.GetString(TypeUserName, "")
 	userObj.gaeObject.Title = propObj.GetString(TypeTitle, "")
-	userObj.gaeObject.Tag = propObj.GetString(TypeTag, "")
+	userObj.gaeObject.Tag = propObj.GetPropStringList2String("", TypeTag, make([]string, 0))
 	userObj.gaeObject.Cont = propObj.GetString(TypeCont, "")
 	userObj.gaeObject.Info = propObj.GetString(TypeInfo, "")
 	userObj.gaeObject.Type = propObj.GetString(TypeType, "")
