@@ -8,7 +8,7 @@ import (
 	"google.golang.org/appengine/datastore"
 	//	"google.golang.org/appengine/log"
 	//"google.golang.org/appengine/blobstore"
-	"errors"
+	//	"errors"
 
 	"google.golang.org/appengine/memcache"
 )
@@ -39,13 +39,6 @@ type Article struct {
 	gaeObjectKey *datastore.Key
 	gaeObject    *GaeObjectArticle
 	kind         string
-}
-
-type ArticleManager struct {
-	projectId      string
-	prefixOfId     string
-	kindArticle    string
-	limitOfFinding int
 }
 
 const (
@@ -213,6 +206,18 @@ func (obj *ArticleManager) makeCursorSrc(founds *datastore.Iterator) string {
 	}
 }
 
+func (obj *ArticleManager) GetArticleFromPointer(ctx context.Context, articleId string) (*Article, error) {
+	pointerObj, pointerErr := obj.pointerMgr.GetPointer(ctx, articleId, articleId)
+	if pointerErr != nil {
+		return nil, pointerErr
+	}
+	pointerArticleId := pointerObj.GetValue()
+	pointerSign := pointerObj.GetSign()
+
+	return obj.GetArticleFromArticleId(ctx, pointerArticleId, pointerSign)
+}
+
+/*
 func (obj *ArticleManager) GetArticleFromArticleIdOnQuery(ctx context.Context, articleId string) (*Article, error) {
 	q := datastore.NewQuery(obj.kindArticle)
 	q = q.Filter("ProjectId =", obj.projectId)
@@ -226,3 +231,4 @@ func (obj *ArticleManager) GetArticleFromArticleIdOnQuery(ctx context.Context, a
 		return nil, errors.New("--")
 	}
 }
+*/

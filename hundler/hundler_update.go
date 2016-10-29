@@ -37,7 +37,7 @@ func (obj *ArticleHandler) HandleUpdate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	artObj, errGetArt := obj.GetManager().GetArticleFromArticleIdOnQuery(ctx, articleId)
+	artObj, errGetArt := obj.GetManager().GetArticleFromPointer(ctx, articleId)
 	if errGetArt != nil {
 		obj.onEvents.OnUpdateArtFailed(w, r, obj, inputProp, outputProp)
 		HandleError(w, r, outputProp, ErrorCodeNotFoundArticleId, "Not Found Article")

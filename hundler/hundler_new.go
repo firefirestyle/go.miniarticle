@@ -41,7 +41,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//
-	errSave := obj.GetManager().SaveOnDB(ctx, artObj)
+	errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
 	if errSave != nil {
 		obj.onEvents.OnNewArtFailed(w, r, obj, inputProp, outputProp)
 		HandleError(w, r, outputProp, ErrorCodeFailedToSave, errSave.Error())

@@ -10,17 +10,32 @@ import (
 
 	"crypto/rand"
 
+	"github.com/firefirestyle/go.minipointer"
 	"github.com/firefirestyle/go.miniprop"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
 )
 
-func NewArticleManager(projectId string, kindArticle string, prefixOfId string, limitOfFinding int) *ArticleManager {
+type ArticleManager struct {
+	projectId      string
+	prefixOfId     string
+	kindArticle    string
+	kindPointer    string
+	pointerMgr     *minipointer.PointerManager
+	limitOfFinding int
+}
+
+func NewArticleManager(projectId string, kindArticle string, kindPointer string, prefixOfId string, limitOfFinding int) *ArticleManager {
 	ret := new(ArticleManager)
 	ret.projectId = projectId
 	ret.prefixOfId = prefixOfId
 	ret.kindArticle = kindArticle
+	ret.kindPointer = kindPointer
 	ret.limitOfFinding = limitOfFinding
+	ret.pointerMgr = minipointer.NewPointerManager(minipointer.PointerManagerConfig{
+		ProjectId: projectId,
+		Kind:      kindPointer,
+	})
 	return ret
 }
 
@@ -71,9 +86,10 @@ func (obj *ArticleManager) makeRandomId() string {
 	return strconv.FormatUint(n, 36)
 }
 
+/*
 func (obj *ArticleManager) SaveOnDB(ctx context.Context, artObj *Article) error {
 	return artObj.saveOnDB(ctx)
-}
+}*/
 
 func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Article) error {
 	sign := strconv.Itoa(time.Now().Nanosecond())
@@ -83,7 +99,20 @@ func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Art
 	if saveErr != nil {
 		return saveErr
 	}
-	obj.DeleteFromArticleId(ctx, artObj.GetArticleId(), artObj.GetParentId())
+	pointerObj := obj.pointerMgr.GetPointerForRelayId(ctx, artObj.GetArticleId())
+	pointerObj.SetValue(nextArObj.GetArticleId())
+	pointerObj.SetSign(nextArObj.gaeObject.Sign)
+	savePointerErr := pointerObj.Save(ctx)
+	if savePointerErr != nil {
+		err := obj.DeleteFromArticleId(ctx, nextArObj.GetArticleId(), nextArObj.gaeObject.Sign)
+		if err != nil {
+			Debug(ctx, "<GOMIDATA>"+nextArObj.GetArticleId()+":"+nextArObj.gaeObject.Sign+"<GOMIDATA>")
+		}
+		return savePointerErr
+	}
+	if artObj.gaeObject.Sign != "0" {
+		obj.DeleteFromArticleId(ctx, artObj.GetArticleId(), artObj.GetParentId())
+	}
 	return nil
 }
 

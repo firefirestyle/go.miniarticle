@@ -26,6 +26,7 @@ type ArticleHandler struct {
 	projectId   string
 	articleKind string
 	blobKind    string
+	pointerKind string
 	artMana     *article.ArticleManager
 	blobHundler *blobhandler.BlobHandler
 	onEvents    ArticleHandlerOnEvent
@@ -34,6 +35,7 @@ type ArticleHandler struct {
 type ArticleHandlerManagerConfig struct {
 	ProjectId       string
 	ArticleKind     string
+	PointerKind     string
 	BlobKind        string
 	BlobCallbackUrl string
 	BlobSign        string
@@ -54,7 +56,7 @@ type ArticleHandlerOnEvent struct {
 
 func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOnEvent) *ArticleHandler {
 
-	artMana := article.NewArticleManager(config.ProjectId, config.ArticleKind, "art-", 10)
+	artMana := article.NewArticleManager(config.ProjectId, config.ArticleKind, config.PointerKind, "art", 10)
 	//
 	//
 	if onEvents.OnNewRequest == nil {
