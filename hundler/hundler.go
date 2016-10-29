@@ -117,6 +117,11 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 		//
 		ctx := appengine.NewContext(r)
 		Debug(ctx, "OnBlobComplete "+articlId+":"+dir)
+		_, errGet := artHandlerObj.GetManager().GetArticleFromPointer(ctx, articlId)
+		if errGet != nil {
+			return errGet
+		}
+		//
 		if completeFunc != nil {
 			return completeFunc(w, r, o, hh, i)
 		} else {
