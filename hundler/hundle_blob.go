@@ -3,8 +3,36 @@ package hundler
 import (
 	"net/http"
 
+	"strings"
+
 	"google.golang.org/appengine"
 )
+
+func (obj *ArticleHandler) GetArticleIdFromDir(dir string) string {
+	if false == strings.HasPrefix(dir, "/art/") {
+		return ""
+	}
+	t1 := strings.Replace(dir, "/art/", "", 1)
+	t2 := strings.Index(t1, "/")
+	if t2 == -1 {
+		t2 = len(t1)
+	}
+
+	return t1[0:t2]
+}
+
+func (obj *ArticleHandler) GetDirFromDir(dir string) string {
+	if false == strings.HasPrefix(dir, "/art/") {
+		return ""
+	}
+	t1 := strings.Replace(dir, "/art/", "", 1)
+	t2 := strings.Index(t1, "/")
+	if t2 == -1 {
+		t2 = 0
+	}
+
+	return t1[t2:len(t1)]
+}
 
 func (obj *ArticleHandler) HandleBlobRequestToken(w http.ResponseWriter, r *http.Request) {
 	//

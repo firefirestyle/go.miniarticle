@@ -12,6 +12,7 @@ import (
 	blobhandler "github.com/firefirestyle/go.miniblob/handler"
 	"github.com/firefirestyle/go.miniprop"
 	"golang.org/x/net/context"
+	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
 )
 
@@ -39,15 +40,16 @@ type ArticleHandlerManagerConfig struct {
 }
 
 type ArticleHandlerOnEvent struct {
-	OnNewRequest  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnNewRequest    func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnNewBeforeSave func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	OnNewArtFailed  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
 	OnNewArtSuccess func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	//
-	OnUpdateRequest  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnUpdateRequest    func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	OnUpdateArtFailed  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
 	OnUpdateArtSuccess func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	//
-	OnBlobRequest func(http.ResponseWriter, *http.Request, *miniprop.MiniProp, *blobhandler.BlobHandler) (string, map[string]string, error)
+	blobOnEvent blobhandler.BlobHandlerOnEvent
 }
 
 func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOnEvent) *ArticleHandler {
@@ -70,6 +72,13 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 			return nil
 		}
 	}
+	if onEvents.OnNewBeforeSave == nil {
+		onEvents.OnNewBeforeSave = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
+			return nil
+		}
+	}
+
+	//
 	//
 	if onEvents.OnUpdateRequest == nil {
 		onEvents.OnUpdateRequest = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
@@ -86,30 +95,41 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 			return nil
 		}
 	}
+
 	//
-	if onEvents.OnBlobRequest == nil {
-		onEvents.OnBlobRequest = func(http.ResponseWriter, *http.Request, *miniprop.MiniProp, *blobhandler.BlobHandler) (string, map[string]string, error) {
-			return "dummy", map[string]string{}, nil
-		}
-	}
-	blobHundler := blobhandler.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
-		miniblob.BlobManagerConfig{
-			ProjectId:   config.ProjectId,
-			Kind:        config.BlobKind,
-			CallbackUrl: config.BlobCallbackUrl,
-		}, blobhandler.BlobHandlerOnEvent{
-			OnBlobRequest: func(w http.ResponseWriter, r *http.Request, input *miniprop.MiniProp, blob *blobhandler.BlobHandler) (string, map[string]string, error) {
-				return onEvents.OnBlobRequest(w, r, input, blob)
-			},
-		})
-	return &ArticleHandler{
+	//
+	//
+	artHandlerObj := &ArticleHandler{
 		projectId:   config.ProjectId,
 		articleKind: config.ArticleKind,
 		blobKind:    config.BlobKind,
 		artMana:     artMana,
-		blobHundler: blobHundler,
 		onEvents:    onEvents,
 	}
+	completeFunc := onEvents.blobOnEvent.OnBlobComplete
+	onEvents.blobOnEvent.OnBlobComplete = func(w http.ResponseWriter, r *http.Request, o *miniprop.MiniProp, hh *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
+		dirSrc := r.URL.Query().Get("dir")
+		articlId := artHandlerObj.GetArticleIdFromDir(dirSrc)
+		dir := artHandlerObj.GetDirFromDir(dirSrc)
+		//
+		//
+		ctx := appengine.NewContext(r)
+		Debug(ctx, "OnBlobComplete "+articlId+":"+dir)
+		if completeFunc != nil {
+			return completeFunc(w, r, o, hh, i)
+		} else {
+			return nil
+		}
+	}
+	//
+	artHandlerObj.blobHundler = blobhandler.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
+		miniblob.BlobManagerConfig{
+			ProjectId:   config.ProjectId,
+			Kind:        config.BlobKind,
+			CallbackUrl: config.BlobCallbackUrl,
+		}, onEvents.blobOnEvent)
+
+	return artHandlerObj
 }
 
 func (obj *ArticleHandler) GetManager() *article.ArticleManager {

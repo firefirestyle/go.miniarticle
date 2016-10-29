@@ -74,18 +74,19 @@ func (obj *ArticleManager) NewArticleFromArticle(ctx context.Context, baseArtObj
 	return ret
 }
 
-func (obj *ArticleManager) NewArticle(ctx context.Context, userName string, sign string) *Article {
+func (obj *ArticleManager) NewArticle(ctx context.Context) *Article {
 	created := time.Now()
 	var secretKey string
 	var articleId string
 	var key *datastore.Key
 	var art GaeObjectArticle
+	sign := "0"
 	for {
 		secretKey = obj.makeRandomId() + obj.makeRandomId()
-		articleId = obj.makeArticleId(userName, created, secretKey)
+		articleId = obj.makeArticleId(created, secretKey)
 		//stringId := obj.makeStringId(articleId, sign)
 		//
-		Debug(ctx, "<NewArticle>"+articleId+"::"+sign)
+		Debug(ctx, "<NewArticle>"+articleId)
 		key = obj.NewGaeObjectKey(ctx, articleId, sign, "")
 		err := datastore.Get(ctx, key, &art)
 		if err != nil {
@@ -98,7 +99,6 @@ func (obj *ArticleManager) NewArticle(ctx context.Context, userName string, sign
 	ret.gaeObject = &art
 	ret.gaeObjectKey = key
 	ret.gaeObject.ProjectId = obj.projectId
-	ret.gaeObject.UserName = userName
 	ret.gaeObject.Sign = sign
 	ret.gaeObject.Created = created
 	ret.gaeObject.Updated = created

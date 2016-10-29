@@ -2,7 +2,7 @@ package article
 
 import (
 	"crypto/sha1"
-	"encoding/base64"
+	"encoding/base32"
 	"encoding/binary"
 	"fmt"
 	"strconv"
@@ -28,10 +28,9 @@ func (obj *ArticleManager) GetKind() string {
 	return obj.kindArticle
 }
 
-func (obj *ArticleManager) makeArticleId(userName string, created time.Time, secretKey string) string {
-	hashKey := obj.hashStr(fmt.Sprintf("%sv1e%s%s%s%d", obj.prefixOfId, secretKey, userName, userName, created.UnixNano()))
-	userName64 := base64.StdEncoding.EncodeToString([]byte(userName))
-	return "" + obj.prefixOfId + "v1e" + hashKey + userName64
+func (obj *ArticleManager) makeArticleId(created time.Time, secretKey string) string {
+	hashKey := obj.hashStr(fmt.Sprintf("p:%s;s:%s;c:%d;", obj.prefixOfId, secretKey, created.UnixNano()))
+	return "" + obj.prefixOfId + "-v1e-" + hashKey
 }
 
 func (obj *ArticleManager) makeStringId(articleId string, sign string) string {
@@ -63,7 +62,7 @@ func (obj *ArticleManager) hash(v string) string {
 func (obj *ArticleManager) hashStr(v string) string {
 	sha1Obj := sha1.New()
 	sha1Obj.Write([]byte(v))
-	return string(base64.StdEncoding.EncodeToString(sha1Obj.Sum(nil)))
+	return string(base32.StdEncoding.EncodeToString(sha1Obj.Sum(nil)))
 }
 
 func (obj *ArticleManager) makeRandomId() string {

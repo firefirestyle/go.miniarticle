@@ -13,10 +13,11 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	//
 	// load param from json
 	inputProp := obj.GetInputProp(w, r)
-	ownerName := inputProp.GetString("ownerName", "")
 	title := inputProp.GetString("title", "")
 	target := inputProp.GetString("target", "")
 	content := inputProp.GetString("content", "")
+	ownerName := inputProp.GetString("ownerName", "")
+
 	//
 	//
 	outputProp := miniprop.NewMiniProp()
@@ -27,11 +28,18 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//
-	artObj := obj.GetManager().NewArticle(ctx, ownerName, "")
+	artObj := obj.GetManager().NewArticle(ctx)
 	artObj.SetTitle(title)
 	artObj.SetTarget(target)
 	artObj.SetCont(content)
+	artObj.SetUserName(ownerName)
 	//
+	errNew := obj.onEvents.OnNewBeforeSave(w, r, obj, artObj, inputProp, outputProp)
+	if nil != errNew {
+		obj.onEvents.OnNewArtFailed(w, r, obj, inputProp, outputProp)
+		HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errNew.Error())
+		return
+	}
 	//
 	errSave := obj.GetManager().SaveOnDB(ctx, artObj)
 	if errSave != nil {
