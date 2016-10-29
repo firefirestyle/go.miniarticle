@@ -97,6 +97,7 @@ func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Art
 	nextArObj.SetUpdated(time.Now())
 	saveErr := nextArObj.saveOnDB(ctx)
 	if saveErr != nil {
+		Debug(ctx, ".>>>>>>>> AAA")
 		return saveErr
 	}
 	pointerObj := obj.pointerMgr.GetPointerForRelayId(ctx, artObj.GetArticleId())
@@ -108,6 +109,8 @@ func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Art
 		if err != nil {
 			Debug(ctx, "<GOMIDATA>"+nextArObj.GetArticleId()+":"+nextArObj.gaeObject.Sign+"<GOMIDATA>")
 		}
+		Debug(ctx, ".>>>>>>>> BBB")
+
 		return savePointerErr
 	}
 	if artObj.gaeObject.Sign != "0" {

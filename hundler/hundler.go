@@ -1,11 +1,8 @@
 package hundler
 
 import (
-	"net/http"
-
-	//	"strings"
-
 	"io/ioutil"
+	"net/http"
 
 	"github.com/firefirestyle/go.miniarticle/article"
 	miniblob "github.com/firefirestyle/go.miniblob/blob"
@@ -113,13 +110,22 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 		dirSrc := r.URL.Query().Get("dir")
 		articlId := artHandlerObj.GetArticleIdFromDir(dirSrc)
 		dir := artHandlerObj.GetDirFromDir(dirSrc)
+		fileName := r.URL.Query().Get("file")
 		//
 		//
 		ctx := appengine.NewContext(r)
-		Debug(ctx, "OnBlobComplete "+articlId+":"+dir)
-		_, errGet := artHandlerObj.GetManager().GetArticleFromPointer(ctx, articlId)
+		Debug(ctx, "OnBlobComplete ::"+articlId+"::"+dir+"::"+fileName+"::")
+		artObj, errGet := artHandlerObj.GetManager().GetArticleFromPointer(ctx, articlId)
 		if errGet != nil {
+			Debug(ctx, "From Pointer GEt ER "+articlId)
 			return errGet
+		}
+		if dir == "/" && fileName == "icon" {
+			artObj.SetIconUrl("key://" + i.GetBlobKey())
+			errSave := artHandlerObj.GetManager().SaveUsrWithImmutable(ctx, artObj)
+			if errSave != nil {
+				return errSave
+			}
 		}
 		//
 		if completeFunc != nil {

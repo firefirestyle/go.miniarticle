@@ -22,9 +22,6 @@ func (obj *ArticleManager) FindArticleFromUserName(ctx context.Context, userName
 	q = q.Filter("ProjectId =", obj.projectId)
 	q = q.Filter("UserName =", userName) ////
 	q = q.Filter("ParentId =", parentId)
-	if state != "" {
-		q = q.Filter("State =", ArticleStatePublic) //
-	}
 	q = q.Order("-Updated").Limit(obj.limitOfFinding)
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }
@@ -34,9 +31,6 @@ func (obj *ArticleManager) FindArticleFromTarget(ctx context.Context, targetName
 	q = q.Filter("ProjectId =", obj.projectId)
 	q = q.Filter("Target =", targetName) ////
 	q = q.Filter("ParentId =", parentId)
-	if state != "" {
-		q = q.Filter("State =", ArticleStatePublic) //
-	}
 	q = q.Order("-Updated").Limit(obj.limitOfFinding)
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }

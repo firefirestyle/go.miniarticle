@@ -10,13 +10,8 @@ import (
 	//"google.golang.org/appengine/blobstore"
 	//	"errors"
 
+	"github.com/firefirestyle/go.minipointer"
 	"google.golang.org/appengine/memcache"
-)
-
-const (
-	ArticleStatePublic  = "public"
-	ArticleStatePrivate = "private"
-	ArticleStateAll     = ""
 )
 
 type GaeObjectArticle struct {
@@ -27,12 +22,13 @@ type GaeObjectArticle struct {
 	Cont      string `datastore:",noindex"`
 	Info      string `datastore:",noindex"`
 	Type      string
-	Sign      string
+	Sign      string `datastore:",noindex"`
 	ArticleId string
 	Created   time.Time
 	Updated   time.Time
 	SecretKey string `datastore:",noindex"`
 	Target    string
+	IconUrl   string `datastore:",noindex"`
 }
 
 type Article struct {
@@ -55,6 +51,7 @@ const (
 	TypeUpdated   = "Updated"
 	TypeSecretKey = "SecretKey"
 	TypeTarget    = "Target"
+	TypeIconUrl   = "IconUrl"
 )
 
 func (obj *Article) updateMemcache(ctx context.Context) error {
@@ -80,6 +77,18 @@ func (obj *Article) GetGaeObjectKey() *datastore.Key {
 
 func (obj *Article) GetUserName() string {
 	return obj.gaeObject.UserName
+}
+
+func (obj *Article) GetSign() string {
+	return obj.gaeObject.Sign
+}
+
+func (obj *Article) GetIconUrl() string {
+	return obj.gaeObject.IconUrl
+}
+
+func (obj *Article) SetIconUrl(v string) {
+	obj.gaeObject.IconUrl = v
 }
 
 func (obj *Article) GetInfo() string {
@@ -207,12 +216,14 @@ func (obj *ArticleManager) makeCursorSrc(founds *datastore.Iterator) string {
 }
 
 func (obj *ArticleManager) GetArticleFromPointer(ctx context.Context, articleId string) (*Article, error) {
-	pointerObj, pointerErr := obj.pointerMgr.GetPointer(ctx, articleId, articleId)
+	pointerObj, pointerErr := obj.pointerMgr.GetPointer(ctx, articleId, minipointer.TypePointer)
 	if pointerErr != nil {
+		Debug(ctx, "---> pointer")
 		return nil, pointerErr
 	}
 	pointerArticleId := pointerObj.GetValue()
 	pointerSign := pointerObj.GetSign()
+	Debug(ctx, "---> pointer "+":"+pointerArticleId+":"+pointerSign+":")
 
 	return obj.GetArticleFromArticleId(ctx, pointerArticleId, pointerSign)
 }
