@@ -34,6 +34,7 @@ type ArticleHandlerManagerConfig struct {
 	ArticleKind     string
 	PointerKind     string
 	BlobKind        string
+	BlobPointerKind string
 	BlobCallbackUrl string
 	BlobSign        string
 }
@@ -140,6 +141,7 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 			ProjectId:   config.ProjectId,
 			Kind:        config.BlobKind,
 			CallbackUrl: config.BlobCallbackUrl,
+			PointerKind: config.PointerKind,
 		}, onEvents.blobOnEvent)
 
 	return artHandlerObj

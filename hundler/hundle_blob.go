@@ -54,3 +54,10 @@ func (obj *ArticleHandler) HandleBlobUpdated(w http.ResponseWriter, r *http.Requ
 	Debug(ctx, "callbeck AAAA")
 	obj.blobHundler.HandleUploaded(w, r)
 }
+
+func (obj *ArticleHandler) HandleBlobGet(w http.ResponseWriter, r *http.Request) {
+	//
+	ctx := appengine.NewContext(r)
+	Debug(ctx, "callbeck AAAA")
+	obj.blobHundler.HandleGet(w, r)
+}

@@ -114,7 +114,7 @@ func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Art
 		return savePointerErr
 	}
 	if artObj.gaeObject.Sign != "0" {
-		obj.DeleteFromArticleId(ctx, artObj.GetArticleId(), artObj.GetParentId())
+		obj.DeleteFromArticleId(ctx, artObj.GetArticleId(), artObj.GetSign())
 	}
 	return nil
 }
