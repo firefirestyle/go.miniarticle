@@ -49,7 +49,7 @@ type ArticleHandlerOnEvent struct {
 	OnUpdateArtFailed  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
 	OnUpdateArtSuccess func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	//
-	blobOnEvent blobhandler.BlobHandlerOnEvent
+	BlobOnEvent blobhandler.BlobHandlerOnEvent
 }
 
 func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOnEvent) *ArticleHandler {
@@ -106,8 +106,8 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 		artMana:     artMana,
 		onEvents:    onEvents,
 	}
-	completeFunc := onEvents.blobOnEvent.OnBlobComplete
-	onEvents.blobOnEvent.OnBlobComplete = func(w http.ResponseWriter, r *http.Request, o *miniprop.MiniProp, hh *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
+	completeFunc := onEvents.BlobOnEvent.OnBlobComplete
+	onEvents.BlobOnEvent.OnBlobComplete = func(w http.ResponseWriter, r *http.Request, o *miniprop.MiniProp, hh *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
 		dirSrc := r.URL.Query().Get("dir")
 		articlId := artHandlerObj.GetArticleIdFromDir(dirSrc)
 		dir := artHandlerObj.GetDirFromDir(dirSrc)
@@ -142,7 +142,7 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 			Kind:        config.BlobKind,
 			CallbackUrl: config.BlobCallbackUrl,
 			PointerKind: config.PointerKind,
-		}, onEvents.blobOnEvent)
+		}, onEvents.BlobOnEvent)
 
 	return artHandlerObj
 }
