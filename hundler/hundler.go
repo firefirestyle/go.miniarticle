@@ -52,6 +52,21 @@ type ArticleHandlerOnEvent struct {
 }
 
 func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOnEvent) *ArticleHandler {
+	if config.RootGroup == "" {
+		config.RootGroup = "ffstyle"
+	}
+	if config.ArticleKind == "" {
+		config.ArticleKind = "ffart"
+	}
+	if config.PointerKind == "" {
+		config.PointerKind = config.ArticleKind + "-pointer"
+	}
+	if config.BlobKind == "" {
+		config.BlobKind = config.ArticleKind + "-blob-pointer"
+	}
+	if config.BlobPointerKind == "" {
+		config.BlobPointerKind = config.ArticleKind + "-blob-pointer"
+	}
 
 	artMana := article.NewArticleManager(config.RootGroup, config.ArticleKind, config.PointerKind, "art", 10)
 	//

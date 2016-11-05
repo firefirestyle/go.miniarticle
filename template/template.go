@@ -51,7 +51,7 @@ func NewArtTemplate(config ArtTemplateConfig, userHandlerObj *userHandler.UserHa
 		config.GroupName = "FFS"
 	}
 	if config.KindBaseName != "" {
-		config.KindBaseName = "FFSUser"
+		config.KindBaseName = "FFSArt"
 	}
 
 	return &ArtTemplate{
@@ -72,10 +72,8 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 	if tmpObj.artHandlerObj == nil {
 		tmpObj.artHandlerObj = arthundler.NewArtHandler(
 			arthundler.ArticleHandlerManagerConfig{
-				RootGroup:       "firefirestyle",
-				ArticleKind:     "article",
-				BlobKind:        "artblob",
-				PointerKind:     "artpointer",
+				RootGroup:       tmpObj.config.GroupName,
+				ArticleKind:     tmpObj.config.KindBaseName,
 				BlobCallbackUrl: UrlArtCallbackBlobUrl,
 				BlobSign:        appengine.VersionID(ctx),
 			}, //
