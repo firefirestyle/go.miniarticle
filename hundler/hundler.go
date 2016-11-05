@@ -49,7 +49,6 @@ type ArticleHandlerOnEvent struct {
 	OnUpdateArtFailed  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
 	OnUpdateArtSuccess func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	//
-	BlobOnEvent blobhandler.BlobHandlerOnEvent
 }
 
 func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOnEvent) *ArticleHandler {
@@ -106,8 +105,16 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 		artMana:     artMana,
 		onEvents:    onEvents,
 	}
-	completeFunc := onEvents.BlobOnEvent.OnBlobComplete
-	onEvents.BlobOnEvent.OnBlobComplete = func(w http.ResponseWriter, r *http.Request, o *miniprop.MiniProp, hh *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
+
+	//
+	artHandlerObj.blobHundler = blobhandler.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
+		miniblob.BlobManagerConfig{
+			ProjectId:   config.ProjectId,
+			Kind:        config.BlobKind,
+			CallbackUrl: config.BlobCallbackUrl,
+			PointerKind: config.PointerKind,
+		})
+	artHandlerObj.blobHundler.GetBlobHandleEvent().OnBlobComplete = append(artHandlerObj.blobHundler.GetBlobHandleEvent().OnBlobComplete, func(w http.ResponseWriter, r *http.Request, o *miniprop.MiniProp, hh *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
 		dirSrc := r.URL.Query().Get("dir")
 		articlId := artHandlerObj.GetArticleIdFromDir(dirSrc)
 		dir := artHandlerObj.GetDirFromDir(dirSrc)
@@ -128,27 +135,17 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 				return errSave
 			}
 		}
-		//
-		if completeFunc != nil {
-			return completeFunc(w, r, o, hh, i)
-		} else {
-			return nil
-		}
-	}
-	//
-	artHandlerObj.blobHundler = blobhandler.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
-		miniblob.BlobManagerConfig{
-			ProjectId:   config.ProjectId,
-			Kind:        config.BlobKind,
-			CallbackUrl: config.BlobCallbackUrl,
-			PointerKind: config.PointerKind,
-		}, onEvents.BlobOnEvent)
-
+		return nil
+	})
 	return artHandlerObj
 }
 
 func (obj *ArticleHandler) GetManager() *article.ArticleManager {
 	return obj.artMana
+}
+
+func (obj *ArticleHandler) GetBlobHandler() *blobhandler.BlobHandler {
+	return obj.blobHundler
 }
 
 func HandleError(w http.ResponseWriter, r *http.Request, outputProp *miniprop.MiniProp, errorCode int, errorMessage string) {
