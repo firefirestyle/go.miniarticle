@@ -7,6 +7,7 @@ import (
 
 	"github.com/firefirestyle/go.miniarticle/article"
 	arthundler "github.com/firefirestyle/go.miniarticle/hundler"
+
 	blobhandler "github.com/firefirestyle/go.miniblob/handler"
 	"github.com/firefirestyle/go.miniprop"
 	"github.com/firefirestyle/go.minisession"
@@ -43,20 +44,20 @@ type ArtTemplateConfig struct {
 type ArtTemplate struct {
 	config         ArtTemplateConfig
 	artHandlerObj  *arthundler.ArticleHandler
-	userHandlerObj *userHandler.UserHandler
+	getUserHundler func(context.Context) *userHandler.UserHandler
 }
 
-func NewArtTemplate(config ArtTemplateConfig, userHandlerObj *userHandler.UserHandler) *ArtTemplate {
-	if config.GroupName != "" {
+func NewArtTemplate(config ArtTemplateConfig, getUserHundler func(context.Context) *userHandler.UserHandler) *ArtTemplate {
+	if config.GroupName == "" {
 		config.GroupName = "FFS"
 	}
-	if config.KindBaseName != "" {
+	if config.KindBaseName == "" {
 		config.KindBaseName = "FFSArt"
 	}
 
 	return &ArtTemplate{
 		config:         config,
-		userHandlerObj: userHandlerObj,
+		getUserHundler: getUserHundler,
 	}
 }
 
@@ -65,7 +66,7 @@ func NewArtTemplate(config ArtTemplateConfig, userHandlerObj *userHandler.UserHa
 
 func (tmpObj *ArtTemplate) CheckLogin(r *http.Request, input *miniprop.MiniProp) minisession.CheckLoginIdResult {
 	token := input.GetString("token", "")
-	return tmpObj.userHandlerObj.CheckLogin(r, token)
+	return tmpObj.getUserHundler(appengine.NewContext(r)).CheckLogin(r, token)
 }
 
 func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.ArticleHandler {
@@ -107,7 +108,7 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 	return tmpObj.artHandlerObj
 }
 
-func (tmpObj *ArtTemplate) initArtApi() {
+func (tmpObj *ArtTemplate) InitArtApi() {
 
 	// art
 	// UrlArtNew
