@@ -33,7 +33,7 @@ func NewArticleManager(projectId string, kindArticle string, kindPointer string,
 	ret.kindPointer = kindPointer
 	ret.limitOfFinding = limitOfFinding
 	ret.pointerMgr = minipointer.NewPointerManager(minipointer.PointerManagerConfig{
-		ProjectId: projectId,
+		RootGroup: projectId,
 		Kind:      kindPointer,
 	})
 	return ret

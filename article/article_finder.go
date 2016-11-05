@@ -19,7 +19,7 @@ type FoundArticles struct {
 
 func (obj *ArticleManager) FindArticleFromUserName(ctx context.Context, userName string, parentId string, state string, cursorSrc string, keyOnly bool) *FoundArticles {
 	q := datastore.NewQuery(obj.kindArticle)
-	q = q.Filter("ProjectId =", obj.projectId)
+	q = q.Filter("RootGroup =", obj.projectId)
 	q = q.Filter("UserName =", userName) ////
 	q = q.Filter("ParentId =", parentId)
 	q = q.Order("-Updated").Limit(obj.limitOfFinding)
@@ -28,7 +28,7 @@ func (obj *ArticleManager) FindArticleFromUserName(ctx context.Context, userName
 
 func (obj *ArticleManager) FindArticleFromTarget(ctx context.Context, targetName string, parentId string, state string, cursorSrc string, keyOnly bool) *FoundArticles {
 	q := datastore.NewQuery(obj.kindArticle)
-	q = q.Filter("ProjectId =", obj.projectId)
+	q = q.Filter("RootGroup =", obj.projectId)
 	q = q.Filter("Target =", targetName) ////
 	q = q.Filter("ParentId =", parentId)
 	q = q.Order("-Updated").Limit(obj.limitOfFinding)
@@ -37,7 +37,7 @@ func (obj *ArticleManager) FindArticleFromTarget(ctx context.Context, targetName
 
 func (obj *ArticleManager) FindArticleWithNewOrder(ctx context.Context, cursorSrc string, keyOnly bool) *FoundArticles {
 	q := datastore.NewQuery(obj.kindArticle)
-	q = q.Filter("ProjectId =", obj.projectId)
+	q = q.Filter("RootGroup =", obj.projectId)
 	//	q = q.Order("-Updated").Limit(obj.limitOfFinding)
 
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)

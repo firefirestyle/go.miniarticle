@@ -30,7 +30,7 @@ type ArticleHandler struct {
 }
 
 type ArticleHandlerManagerConfig struct {
-	ProjectId       string
+	RootGroup       string
 	ArticleKind     string
 	PointerKind     string
 	BlobKind        string
@@ -53,7 +53,7 @@ type ArticleHandlerOnEvent struct {
 
 func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOnEvent) *ArticleHandler {
 
-	artMana := article.NewArticleManager(config.ProjectId, config.ArticleKind, config.PointerKind, "art", 10)
+	artMana := article.NewArticleManager(config.RootGroup, config.ArticleKind, config.PointerKind, "art", 10)
 	//
 	//
 	if onEvents.OnNewRequest == nil {
@@ -99,7 +99,7 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 	//
 	//
 	artHandlerObj := &ArticleHandler{
-		projectId:   config.ProjectId,
+		projectId:   config.RootGroup,
 		articleKind: config.ArticleKind,
 		blobKind:    config.BlobKind,
 		artMana:     artMana,
@@ -109,12 +109,12 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 	//
 	artHandlerObj.blobHundler = blobhandler.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
 		miniblob.BlobManagerConfig{
-			ProjectId:   config.ProjectId,
+			RootGroup:   config.RootGroup,
 			Kind:        config.BlobKind,
 			CallbackUrl: config.BlobCallbackUrl,
 			PointerKind: config.PointerKind,
 		})
-	artHandlerObj.blobHundler.GetBlobHandleEvent().OnBlobComplete = append(artHandlerObj.blobHundler.GetBlobHandleEvent().OnBlobComplete, func(w http.ResponseWriter, r *http.Request, o *miniprop.MiniProp, hh *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
+	artHandlerObj.blobHundler.GetBlobHandleEvent().OnBlobCompleteList = append(artHandlerObj.blobHundler.GetBlobHandleEvent().OnBlobCompleteList, func(w http.ResponseWriter, r *http.Request, o *miniprop.MiniProp, hh *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
 		dirSrc := r.URL.Query().Get("dir")
 		articlId := artHandlerObj.GetArticleIdFromDir(dirSrc)
 		dir := artHandlerObj.GetDirFromDir(dirSrc)

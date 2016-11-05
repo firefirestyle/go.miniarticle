@@ -15,7 +15,7 @@ import (
 )
 
 type GaeObjectArticle struct {
-	ProjectId string
+	RootGroup string
 	UserName  string
 	Title     string `datastore:",noindex"`
 	Tag       string `datastore:",noindex"`
@@ -38,7 +38,7 @@ type Article struct {
 }
 
 const (
-	TypeProjectId = "ProjectId"
+	TypeRootGroup = "RootGroup"
 	TypeUserName  = "UserName"
 	TypeTitle     = "Title"
 	TypeTag       = "Tag"

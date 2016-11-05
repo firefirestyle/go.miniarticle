@@ -98,7 +98,7 @@ func (obj *ArticleManager) NewArticle(ctx context.Context) *Article {
 	ret.kind = obj.kindArticle
 	ret.gaeObject = &art
 	ret.gaeObjectKey = key
-	ret.gaeObject.ProjectId = obj.projectId
+	ret.gaeObject.RootGroup = obj.projectId
 	ret.gaeObject.Sign = sign
 	ret.gaeObject.Created = created
 	ret.gaeObject.Updated = created
