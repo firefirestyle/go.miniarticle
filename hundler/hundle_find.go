@@ -16,6 +16,6 @@ func (obj *ArticleHandler) HandleFind(w http.ResponseWriter, r *http.Request) {
 
 	propObj.SetPropStringList("", "keys", foundObj.ArticleIds)
 	propObj.SetPropString("", "cursorOne", foundObj.CursorOne)
-	propObj.SetPropString("", "cursorOne", foundObj.CursorNext)
+	propObj.SetPropString("", "cursorNext", foundObj.CursorNext)
 	w.Write(propObj.ToJson())
 }
