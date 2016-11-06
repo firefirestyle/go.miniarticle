@@ -17,20 +17,18 @@ type FoundArticles struct {
 	CursorNext string
 }
 
-func (obj *ArticleManager) FindArticleFromUserName(ctx context.Context, userName string, parentId string, state string, cursorSrc string, keyOnly bool) *FoundArticles {
+func (obj *ArticleManager) FindArticleFromUserName(ctx context.Context, userName string, cursorSrc string, keyOnly bool) *FoundArticles {
 	q := datastore.NewQuery(obj.kindArticle)
 	q = q.Filter("RootGroup =", obj.projectId)
 	q = q.Filter("UserName =", userName) ////
-	q = q.Filter("ParentId =", parentId)
 	q = q.Order("-Updated").Limit(obj.limitOfFinding)
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }
 
-func (obj *ArticleManager) FindArticleFromTarget(ctx context.Context, targetName string, parentId string, state string, cursorSrc string, keyOnly bool) *FoundArticles {
+func (obj *ArticleManager) FindArticleFromTarget(ctx context.Context, targetName string, cursorSrc string, keyOnly bool) *FoundArticles {
 	q := datastore.NewQuery(obj.kindArticle)
 	q = q.Filter("RootGroup =", obj.projectId)
 	q = q.Filter("Target =", targetName) ////
-	q = q.Filter("ParentId =", parentId)
 	q = q.Order("-Updated").Limit(obj.limitOfFinding)
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }
