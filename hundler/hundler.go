@@ -1,8 +1,9 @@
 package hundler
 
 import (
-	"io/ioutil"
 	"net/http"
+
+	"io/ioutil"
 
 	"github.com/firefirestyle/go.miniarticle/article"
 	miniblob "github.com/firefirestyle/go.miniblob/blob"
@@ -40,18 +41,18 @@ type ArticleHandlerManagerConfig struct {
 }
 
 type ArticleHandlerOnEvent struct {
-	OnNewRequest    func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
-	OnNewBeforeSave func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error
-	OnNewArtFailed  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
-	OnNewArtSuccess func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnNewRequestList    []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnNewBeforeSaveList []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnNewArtFailedList  []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
+	OnNewArtSuccessList []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	//
-	OnUpdateRequest    func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
-	OnUpdateArtFailed  func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
-	OnUpdateArtSuccess func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnUpdateRequestList    []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnUpdateArtFailedList  []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
+	OnUpdateArtSuccessList []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 	//
 }
 
-func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOnEvent) *ArticleHandler {
+func NewArtHandler(config ArticleHandlerManagerConfig) *ArticleHandler {
 	if config.RootGroup == "" {
 		config.RootGroup = "ffstyle"
 	}
@@ -71,54 +72,12 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 	artMana := article.NewArticleManager(config.RootGroup, config.ArticleKind, config.PointerKind, "art", 10)
 	//
 	//
-	if onEvents.OnNewRequest == nil {
-		onEvents.OnNewRequest = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-			return nil
-		}
-	}
-	if onEvents.OnNewArtFailed == nil {
-		onEvents.OnNewArtFailed = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) {
-			return
-		}
-	}
-	if onEvents.OnNewArtSuccess == nil {
-		onEvents.OnNewArtSuccess = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-			return nil
-		}
-	}
-	if onEvents.OnNewBeforeSave == nil {
-		onEvents.OnNewBeforeSave = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-			return nil
-		}
-	}
-
-	//
-	//
-	if onEvents.OnUpdateRequest == nil {
-		onEvents.OnUpdateRequest = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-			return nil
-		}
-	}
-	if onEvents.OnUpdateArtFailed == nil {
-		onEvents.OnUpdateArtFailed = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) {
-			return
-		}
-	}
-	if onEvents.OnUpdateArtSuccess == nil {
-		onEvents.OnUpdateArtSuccess = func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-			return nil
-		}
-	}
-
-	//
-	//
-	//
 	artHandlerObj := &ArticleHandler{
 		projectId:   config.RootGroup,
 		articleKind: config.ArticleKind,
 		blobKind:    config.BlobKind,
 		artMana:     artMana,
-		onEvents:    onEvents,
+		onEvents:    ArticleHandlerOnEvent{},
 	}
 
 	//

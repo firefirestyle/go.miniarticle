@@ -79,26 +79,24 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 				ArticleKind:     tmpObj.config.KindBaseName,
 				BlobCallbackUrl: UrlArtCallbackBlobUrl,
 				BlobSign:        appengine.VersionID(ctx),
-			}, //
-			arthundler.ArticleHandlerOnEvent{
-				OnNewBeforeSave: func(w http.ResponseWriter, r *http.Request, handler *arthundler.ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-					ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
-					if ret.IsLogin == false {
-						return errors.New("Failed in token check")
-					} else {
-						artObj.SetUserName(ret.AccessTokenObj.GetUserName())
-						return nil
-					}
-				},
-				OnUpdateRequest: func(w http.ResponseWriter, r *http.Request, handler *arthundler.ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-					ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
-					if ret.IsLogin == false {
-						return errors.New("Failed in token check")
-					} else {
-						return nil
-					}
-				},
 			})
+		tmpObj.artHandlerObj.AddOnNewBeforeSave(func(w http.ResponseWriter, r *http.Request, handler *arthundler.ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
+			ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
+			if ret.IsLogin == false {
+				return errors.New("Failed in token check")
+			} else {
+				artObj.SetUserName(ret.AccessTokenObj.GetUserName())
+				return nil
+			}
+		})
+		tmpObj.artHandlerObj.AddOnUpdateRequest(func(w http.ResponseWriter, r *http.Request, handler *arthundler.ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
+			ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
+			if ret.IsLogin == false {
+				return errors.New("Failed in token check")
+			} else {
+				return nil
+			}
+		})
 		tmpObj.artHandlerObj.GetBlobHandler().AddOnBlobRequest(func(w http.ResponseWriter, r *http.Request, input *miniprop.MiniProp, output *miniprop.MiniProp, h *blobhandler.BlobHandler) (map[string]string, error) {
 			ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
 			if ret.IsLogin == false {
