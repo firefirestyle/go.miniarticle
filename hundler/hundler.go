@@ -163,9 +163,12 @@ func (obj *ArticleHandler) GetBlobHandler() *blobhandler.BlobHandler {
 	return obj.blobHundler
 }
 
-func HandleError(w http.ResponseWriter, r *http.Request, outputProp *miniprop.MiniProp, errorCode int, errorMessage string) {
+func (obj *ArticleHandler) HandleError(w http.ResponseWriter, r *http.Request, outputProp *miniprop.MiniProp, errorCode int, errorMessage string) {
 	//
 	//
+	if outputProp == nil {
+		outputProp = miniprop.NewMiniProp()
+	}
 	if errorCode != 0 {
 		outputProp.SetInt("errorCode", errorCode)
 	}
@@ -194,3 +197,6 @@ func (obj *ArticleHandler) GetInputProp(w http.ResponseWriter, r *http.Request) 
 func Debug(ctx context.Context, message string) {
 	log.Infof(ctx, message)
 }
+
+///
+//

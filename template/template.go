@@ -26,6 +26,7 @@ const (
 	UrlArtNew             = "/api/v1/art/new"
 	UrlArtUpdate          = "/api/v1/art/update"
 	UrlArtFind            = "/api/v1/art/find"
+	UrlArtFindMe          = "/api/v1/art/find/me"
 	UrlArtGet             = "/api/v1/art/get"
 	UrlArtBlobGet         = "/api/v1/art/getblob"
 	UrlArtRequestBlobUrl  = "/api/v1/art/requestbloburl"
@@ -64,8 +65,8 @@ func NewArtTemplate(config ArtTemplateConfig, getUserHundler func(context.Contex
 //
 //
 
-func (tmpObj *ArtTemplate) CheckLogin(r *http.Request, input *miniprop.MiniProp) minisession.CheckLoginIdResult {
-	token := input.GetString("token", "")
+func (tmpObj *ArtTemplate) CheckLogin(r *http.Request, token string) minisession.CheckLoginIdResult {
+
 	return tmpObj.getUserHundler(appengine.NewContext(r)).CheckLogin(r, token)
 }
 
@@ -80,7 +81,7 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 			}, //
 			arthundler.ArticleHandlerOnEvent{
 				OnNewBeforeSave: func(w http.ResponseWriter, r *http.Request, handler *arthundler.ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-					ret := tmpObj.CheckLogin(r, input)
+					ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
 					if ret.IsLogin == false {
 						return errors.New("Failed in token check")
 					} else {
@@ -89,7 +90,7 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 					}
 				},
 				OnUpdateRequest: func(w http.ResponseWriter, r *http.Request, handler *arthundler.ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-					ret := tmpObj.CheckLogin(r, input)
+					ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
 					if ret.IsLogin == false {
 						return errors.New("Failed in token check")
 					} else {
@@ -98,7 +99,7 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 				},
 			})
 		tmpObj.artHandlerObj.GetBlobHandler().AddOnBlobRequest(func(w http.ResponseWriter, r *http.Request, input *miniprop.MiniProp, output *miniprop.MiniProp, h *blobhandler.BlobHandler) (map[string]string, error) {
-			ret := tmpObj.CheckLogin(r, input)
+			ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
 			if ret.IsLogin == false {
 				return map[string]string{}, errors.New("Failed in token check")
 			}
@@ -130,6 +131,19 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
 		tmpObj.GetArtHundlerObj(ctx).HandleFind(w, r)
+	})
+
+	http.HandleFunc(UrlArtFindMe, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		ctx := appengine.NewContext(r)
+		propObj := miniprop.NewMiniPropFromJsonReader(r.Body)
+		loginInfo := tmpObj.CheckLogin(r, propObj.GetString("token", ""))
+		if loginInfo.IsLogin == false {
+			tmpObj.GetArtHundlerObj(ctx).HandleError(w, r, nil, 4001, "failed to login")
+		} else {
+			tmpObj.GetArtHundlerObj(ctx).HandleFindBase(w, r, //
+				propObj.GetString("cursor", ""), loginInfo.AccessTokenObj.GetUserName(), "")
+		}
 	})
 
 	http.HandleFunc(UrlArtGet, func(w http.ResponseWriter, r *http.Request) {

@@ -26,21 +26,21 @@ func (obj *ArticleHandler) HandleUpdate(w http.ResponseWriter, r *http.Request) 
 	//
 	if articleId == "" {
 		obj.onEvents.OnUpdateArtFailed(w, r, obj, inputProp, outputProp)
-		HandleError(w, r, outputProp, ErrorCodeNotFoundArticleId, "Not Found Article")
+		obj.HandleError(w, r, outputProp, ErrorCodeNotFoundArticleId, "Not Found Article")
 		return
 	}
 
 	errOnGe := obj.onEvents.OnUpdateRequest(w, r, obj, inputProp, outputProp)
 	if nil != errOnGe {
 		obj.onEvents.OnUpdateArtFailed(w, r, obj, inputProp, outputProp)
-		HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnGe.Error())
+		obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnGe.Error())
 		return
 	}
 
 	artObj, errGetArt := obj.GetManager().GetArticleFromPointer(ctx, articleId)
 	if errGetArt != nil {
 		obj.onEvents.OnUpdateArtFailed(w, r, obj, inputProp, outputProp)
-		HandleError(w, r, outputProp, ErrorCodeNotFoundArticleId, "Not Found Article")
+		obj.HandleError(w, r, outputProp, ErrorCodeNotFoundArticleId, "Not Found Article")
 		return
 	}
 	//
@@ -54,14 +54,14 @@ func (obj *ArticleHandler) HandleUpdate(w http.ResponseWriter, r *http.Request) 
 	errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
 	if errSave != nil {
 		obj.onEvents.OnUpdateArtFailed(w, r, obj, inputProp, outputProp)
-		HandleError(w, r, outputProp, ErrorCodeFailedToSave, errSave.Error())
+		obj.HandleError(w, r, outputProp, ErrorCodeFailedToSave, errSave.Error())
 		return
 	} else {
 		propObj.SetPropString("", "articleId", artObj.GetArticleId())
 		errOnSc := obj.onEvents.OnUpdateArtSuccess(w, r, obj, inputProp, outputProp)
 		if nil != errOnSc {
 			obj.onEvents.OnUpdateArtFailed(w, r, obj, inputProp, outputProp)
-			HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnSc.Error())
+			obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnSc.Error())
 			return
 		}
 		w.WriteHeader(http.StatusOK)

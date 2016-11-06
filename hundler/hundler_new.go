@@ -24,7 +24,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	errCall := obj.onEvents.OnNewRequest(w, r, obj, inputProp, outputProp)
 	if nil != errCall {
 		obj.onEvents.OnNewArtFailed(w, r, obj, inputProp, outputProp)
-		HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errCall.Error())
+		obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errCall.Error())
 		return
 	}
 	//
@@ -37,14 +37,14 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	errNew := obj.onEvents.OnNewBeforeSave(w, r, obj, artObj, inputProp, outputProp)
 	if nil != errNew {
 		obj.onEvents.OnNewArtFailed(w, r, obj, inputProp, outputProp)
-		HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errNew.Error())
+		obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errNew.Error())
 		return
 	}
 	//
 	errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
 	if errSave != nil {
 		obj.onEvents.OnNewArtFailed(w, r, obj, inputProp, outputProp)
-		HandleError(w, r, outputProp, ErrorCodeFailedToSave, errSave.Error())
+		obj.HandleError(w, r, outputProp, ErrorCodeFailedToSave, errSave.Error())
 		return
 	} else {
 		propObj.SetPropString("", "articleId", artObj.GetArticleId())
@@ -54,7 +54,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 				Debug(ctx, "<GOMIDATA>articleId="+artObj.GetArticleId())
 			}
 			obj.onEvents.OnNewArtFailed(w, r, obj, inputProp, outputProp)
-			HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnSc.Error())
+			obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnSc.Error())
 			return
 		}
 		w.WriteHeader(http.StatusOK)

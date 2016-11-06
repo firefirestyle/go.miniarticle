@@ -30,7 +30,7 @@ func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 		artObj, err = obj.GetManager().GetArticleFromPointer(ctx, articleId)
 	}
 	if err != nil {
-		HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, "not found article")
+		obj.HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, "not found article")
 		return
 	}
 	if mode != "q" {
