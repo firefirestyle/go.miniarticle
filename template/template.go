@@ -26,7 +26,7 @@ const (
 	UrlArtNew             = "/api/v1/art/new"
 	UrlArtUpdate          = "/api/v1/art/update"
 	UrlArtFind            = "/api/v1/art/find"
-	UrlArtFindMe          = "/api/v1/art/find/me"
+	UrlArtFindMe          = "/api/v1/art/find_with_token"
 	UrlArtGet             = "/api/v1/art/get"
 	UrlArtBlobGet         = "/api/v1/art/getblob"
 	UrlArtRequestBlobUrl  = "/api/v1/art/requestbloburl"
