@@ -86,12 +86,50 @@ func (obj *ArticleHandler) OnUpdateArtFailed(w http.ResponseWriter, r *http.Requ
 }
 
 //
-func (obj *ArticleHandler) AddUpdateArtSuccess(f func(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error) {
+func (obj *ArticleHandler) AddOnUpdateArtSuccess(f func(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error) {
 	obj.onEvents.OnUpdateArtSuccessList = append(obj.onEvents.OnUpdateArtSuccessList, f)
 }
 
 func (obj *ArticleHandler) OnUpdateArtSuccess(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error {
 	for _, f := range obj.onEvents.OnUpdateArtSuccessList {
+		e := f(w, r, h, i, o)
+		if e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
+//
+func (obj *ArticleHandler) AddOnGetArtRequest(f func(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error) {
+	obj.onEvents.OnGetArtRequestList = append(obj.onEvents.OnGetArtRequestList, f)
+}
+func (obj *ArticleHandler) OnGetArtRequest(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error {
+	for _, f := range obj.onEvents.OnGetArtRequestList {
+		e := f(w, r, h, i, o)
+		if e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
+//
+func (obj *ArticleHandler) AddOnGetArtFailed(f func(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp)) {
+	obj.onEvents.OnGetArtFailedList = append(obj.onEvents.OnGetArtFailedList, f)
+}
+func (obj *ArticleHandler) OnGetArtFailed(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) {
+	for _, f := range obj.onEvents.OnGetArtFailedList {
+		f(w, r, h, i, o)
+	}
+}
+
+//
+func (obj *ArticleHandler) AddOnGetArtSuccess(f func(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error) {
+	obj.onEvents.OnGetArtSuccessList = append(obj.onEvents.OnGetArtSuccessList, f)
+}
+func (obj *ArticleHandler) OnGetArtSuccess(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error {
+	for _, f := range obj.onEvents.OnGetArtSuccessList {
 		e := f(w, r, h, i, o)
 		if e != nil {
 			return e
