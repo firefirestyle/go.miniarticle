@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 
 	"github.com/firefirestyle/go.miniprop"
-	"google.golang.org/appengine"
+	//	"google.golang.org/appengine"
 )
 
 func (obj *ArticleHandler) GetArticleIdFromDir(dir string) string {
@@ -62,14 +62,14 @@ func (obj *ArticleHandler) HandleBlobRequestToken(w http.ResponseWriter, r *http
 
 func (obj *ArticleHandler) HandleBlobUpdated(w http.ResponseWriter, r *http.Request) {
 	//
-	ctx := appengine.NewContext(r)
-	Debug(ctx, "callbeck AAAA")
+	//ctx := appengine.NewContext(r)
+	//Debug(ctx, "callbeck AAAA")
 	obj.blobHundler.HandleUploaded(w, r)
 }
 
 func (obj *ArticleHandler) HandleBlobGet(w http.ResponseWriter, r *http.Request) {
 	//
-	ctx := appengine.NewContext(r)
-	Debug(ctx, "callbeck AAAA")
+	//ctx := appengine.NewContext(r)
+	//Debug(ctx, "callbeck AAAA")
 	obj.blobHundler.HandleGet(w, r)
 }

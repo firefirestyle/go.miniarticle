@@ -184,7 +184,7 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 		if loginInfo.IsLogin == false {
 			tmpObj.GetArtHundlerObj(ctx).HandleError(w, r, nil, 4001, "failed to login")
 		} else {
-			tmpObj.GetArtHundlerObj(ctx).HandleDeleteBase(w, r, propObj.GetString("articleId", ""))
+			tmpObj.GetArtHundlerObj(ctx).HandleDeleteBaseWithFile(w, r, propObj.GetString("articleId", ""))
 		}
 	})
 	//

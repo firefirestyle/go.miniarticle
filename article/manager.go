@@ -43,6 +43,10 @@ func (obj *ArticleManager) GetKind() string {
 	return obj.kindArticle
 }
 
+func (obj *ArticleManager) GetPointerMgr() *minipointer.PointerManager {
+	return obj.pointerMgr
+}
+
 func (obj *ArticleManager) makeArticleId(created time.Time, secretKey string) string {
 	hashKey := obj.hashStr(fmt.Sprintf("p:%s;s:%s;c:%d;", obj.prefixOfId, secretKey, created.UnixNano()))
 	return "" + obj.prefixOfId + "-v1e-" + hashKey
@@ -103,6 +107,8 @@ func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Art
 	pointerObj := obj.pointerMgr.GetPointerForRelayId(ctx, artObj.GetArticleId())
 	pointerObj.SetValue(nextArObj.GetArticleId())
 	pointerObj.SetSign(nextArObj.gaeObject.Sign)
+	pointerObj.SetOwner(artObj.GetArticleId())
+	Debug(ctx, ".>>>>>>>> AAA > "+pointerObj.GetOwner())
 	savePointerErr := pointerObj.Save(ctx)
 	if savePointerErr != nil {
 		err := obj.DeleteFromArticleId(ctx, nextArObj.GetArticleId(), nextArObj.gaeObject.Sign)

@@ -129,6 +129,12 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 			CallbackUrl: config.BlobCallbackUrl,
 			PointerKind: config.BlobPointerKind,
 		})
+	artHandlerObj.blobHundler.AddOnBlobBeforeSave(func(w http.ResponseWriter, r *http.Request, p *miniprop.MiniProp, h *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
+		dirSrc := r.URL.Query().Get("dir")
+		articlId := artHandlerObj.GetArticleIdFromDir(dirSrc)
+		i.SetOwner(articlId)
+		return nil
+	})
 	artHandlerObj.blobHundler.AddOnBlobComplete(func(w http.ResponseWriter, r *http.Request, o *miniprop.MiniProp, hh *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
 		dirSrc := r.URL.Query().Get("dir")
 		articlId := artHandlerObj.GetArticleIdFromDir(dirSrc)
