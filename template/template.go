@@ -97,6 +97,13 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 				return nil
 			}
 		})
+		tmpObj.artHandlerObj.AddOnGetArtSuccess(func(w http.ResponseWriter, r *http.Request, h *arthundler.ArticleHandler, i *article.Article, o *miniprop.MiniProp) error {
+			pointerObj, pointerErr := tmpObj.getUserHundler(appengine.NewContext(r)).GetManager().GetPointerFromUserName(appengine.NewContext(r), i.GetUserName())
+			if pointerErr != nil {
+				o.SetString("usrSign", pointerObj.GetSign())
+			}
+			return nil
+		})
 		tmpObj.artHandlerObj.GetBlobHandler().AddOnBlobRequest(func(w http.ResponseWriter, r *http.Request, input *miniprop.MiniProp, output *miniprop.MiniProp, h *blobhandler.BlobHandler) (map[string]string, error) {
 			ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
 			if ret.IsLogin == false {

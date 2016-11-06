@@ -245,6 +245,10 @@ func (obj *ArticleManager) GetArticleFromPointer(ctx context.Context, articleId 
 	return artObj, pointerObj, artErr
 }
 
+func (obj *ArticleManager) GetPointerFromArticleId(ctx context.Context, articleId string) (*minipointer.Pointer, error) {
+	return obj.pointerMgr.GetPointer(ctx, articleId, minipointer.TypePointer)
+}
+
 /*
 func (obj *ArticleManager) GetArticleFromArticleIdOnQuery(ctx context.Context, articleId string) (*Article, error) {
 	q := datastore.NewQuery(obj.kindArticle)
