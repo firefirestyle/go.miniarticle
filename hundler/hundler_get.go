@@ -24,17 +24,33 @@ func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	}
 	var artObj *article.Article
 	var err error
+	//
+	//
+	errOnGAR := obj.OnGetArtRequest(w, r, obj, propObj)
+	if errOnGAR != nil {
+		obj.OnGetArtFailed(w, r, obj, propObj)
+		obj.HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, errOnGAR.Error())
+		return
+	}
 	if mode != "q" {
 		artObj, err = obj.GetManager().GetArticleFromArticleId(ctx, articleId, sign)
 	} else {
 		artObj, _, err = obj.GetManager().GetArticleFromPointer(ctx, articleId)
 	}
 	if err != nil {
+		obj.OnGetArtFailed(w, r, obj, propObj)
 		obj.HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, "not found article")
 		return
 	}
 	if mode != "q" {
 		w.Header().Set("Cache-Control", "public, max-age=2592000")
+	}
+
+	errOnGAS := obj.OnGetArtSuccess(w, r, obj, artObj, propObj)
+	if errOnGAS != nil {
+		obj.OnGetArtFailed(w, r, obj, propObj)
+		obj.HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, errOnGAS.Error())
+		return
 	}
 	w.Write(artObj.ToJsonPublicOnly())
 }
