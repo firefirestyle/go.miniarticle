@@ -15,7 +15,7 @@ func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	key := values.Get("key")
 	articleId := values.Get("articleId")
 	sign := values.Get("sign")
-	mode := values.Get("m")
+	//	mode := values.Get("m")
 	//
 	if key != "" {
 		keyInfo := obj.GetManager().ExtractInfoFromStringId(key)
@@ -32,7 +32,7 @@ func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 		obj.HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, errOnGAR.Error())
 		return
 	}
-	if mode != "q" {
+	if sign != "" {
 		artObj, err = obj.GetManager().GetArticleFromArticleId(ctx, articleId, sign)
 	} else {
 		artObj, _, err = obj.GetManager().GetArticleFromPointer(ctx, articleId)
@@ -42,15 +42,18 @@ func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 		obj.HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, "not found article")
 		return
 	}
-	if mode != "q" {
+	if sign != "" {
 		w.Header().Set("Cache-Control", "public, max-age=2592000")
 	}
-
+	Debug(ctx, "==========> S OnGetArtSuccess")
+	propObj = miniprop.NewMiniPropFromMap(artObj.ToMap())
 	errOnGAS := obj.OnGetArtSuccess(w, r, obj, artObj, propObj)
+	//
+
 	if errOnGAS != nil {
 		obj.OnGetArtFailed(w, r, obj, propObj)
 		obj.HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, errOnGAS.Error())
 		return
 	}
-	w.Write(artObj.ToJsonPublicOnly())
+	w.Write(propObj.ToJson())
 }

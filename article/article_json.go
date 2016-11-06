@@ -28,7 +28,11 @@ func (obj *Article) ToMap() map[string]interface{} {
 		TypeIconUrl:   obj.gaeObject.IconUrl,
 	}
 }
-
+func (obj *Article) ToMapPublicOnly() map[string]interface{} {
+	v := obj.ToMap()
+	delete(v, TypeSecretKey)
+	return v
+}
 func (obj *Article) ToJson() []byte {
 	vv, _ := json.Marshal(obj.ToMap())
 	return vv

@@ -99,7 +99,9 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 		})
 		tmpObj.artHandlerObj.AddOnGetArtSuccess(func(w http.ResponseWriter, r *http.Request, h *arthundler.ArticleHandler, i *article.Article, o *miniprop.MiniProp) error {
 			pointerObj, pointerErr := tmpObj.getUserHundler(appengine.NewContext(r)).GetManager().GetPointerFromUserName(appengine.NewContext(r), i.GetUserName())
-			if pointerErr != nil {
+			Debug(ctx, ">>>>>>>>>>>>>>>> ON GET ART SUCCESS A")
+			if pointerErr == nil {
+				Debug(ctx, ">>>>>>>>>>>>>>>> ON GET ART SUCCESS B : "+pointerObj.GetSign())
 				o.SetString("usrSign", pointerObj.GetSign())
 			}
 			return nil
