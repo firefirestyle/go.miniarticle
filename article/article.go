@@ -200,12 +200,14 @@ func (mgrObj *ArticleManager) DeleteFromArticleId(ctx context.Context, articleId
 func (mgrObj *ArticleManager) DeleteFromArticleIdWithPointer(ctx context.Context, articleId string) error {
 	artObj, pointerObj, _ := mgrObj.GetArticleFromPointer(ctx, articleId)
 	if artObj != nil {
+		Debug(ctx, "===> art DEL")
 		deleteErr := mgrObj.DeleteFromArticleId(ctx, articleId, pointerObj.GetSign())
 		if deleteErr != nil {
 			return deleteErr
 		}
 	}
 	if pointerObj != nil {
+		Debug(ctx, "===> pointer DEL")
 		return mgrObj.pointerMgr.DeleteFromPointer(ctx, pointerObj)
 	}
 	return nil

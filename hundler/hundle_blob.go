@@ -31,10 +31,21 @@ func (obj *ArticleHandler) GetDirFromDir(dir string) string {
 	t1 := strings.Replace(dir, "/art/", "", 1)
 	t2 := strings.Index(t1, "/")
 	if t2 == -1 {
-		t2 = 0
+		return ""
 	}
 
 	return t1[t2:len(t1)]
+}
+
+func (obj *ArticleHandler) MakePath(articleId, dir string) string {
+	if strings.HasPrefix(dir, "/") {
+		dir = dir[1:]
+	}
+	t1 := "/art/" + articleId + "/" + dir
+	if strings.HasSuffix(t1, "/") {
+		t1 = t1[0:(len(t1) - 1)]
+	}
+	return t1
 }
 
 func (obj *ArticleHandler) HandleBlobRequestToken(w http.ResponseWriter, r *http.Request) {
@@ -45,12 +56,8 @@ func (obj *ArticleHandler) HandleBlobRequestToken(w http.ResponseWriter, r *http
 	dir := inputPropObj.GetString("dir", "")
 	name := inputPropObj.GetString("file", "")
 	articleId := inputPropObj.GetString("articleId", "")
-	//
-	// todo check articleId
-
-	//
-	//
-	obj.blobHundler.HandleBlobRequestTokenFromParams(w, r, "/art/"+articleId+"/"+dir, name, inputPropObj)
+	t1 := obj.MakePath(articleId, dir)
+	obj.blobHundler.HandleBlobRequestTokenFromParams(w, r, t1, name, inputPropObj)
 }
 
 func (obj *ArticleHandler) HandleBlobUpdated(w http.ResponseWriter, r *http.Request) {

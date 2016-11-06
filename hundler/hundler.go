@@ -62,7 +62,7 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 		config.PointerKind = config.ArticleKind + "-pointer"
 	}
 	if config.BlobKind == "" {
-		config.BlobKind = config.ArticleKind + "-blob-pointer"
+		config.BlobKind = config.ArticleKind + "-blob"
 	}
 	if config.BlobPointerKind == "" {
 		config.BlobPointerKind = config.ArticleKind + "-blob-pointer"
@@ -127,7 +127,7 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 			RootGroup:   config.RootGroup,
 			Kind:        config.BlobKind,
 			CallbackUrl: config.BlobCallbackUrl,
-			PointerKind: config.PointerKind,
+			PointerKind: config.BlobPointerKind,
 		})
 	artHandlerObj.blobHundler.AddOnBlobComplete(func(w http.ResponseWriter, r *http.Request, o *miniprop.MiniProp, hh *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
 		dirSrc := r.URL.Query().Get("dir")
@@ -143,7 +143,8 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 			Debug(ctx, "From Pointer GEt ER "+articlId)
 			return errGet
 		}
-		if dir == "/" && fileName == "icon" {
+		Debug(ctx, "=~====>> ICOM "+dir+"::"+fileName)
+		if dir == "" && fileName == "icon" {
 			artObj.SetIconUrl("key://" + i.GetBlobKey())
 			errSave := artHandlerObj.GetManager().SaveUsrWithImmutable(ctx, artObj)
 			if errSave != nil {
