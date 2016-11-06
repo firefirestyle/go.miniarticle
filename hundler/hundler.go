@@ -138,7 +138,7 @@ func NewArtHandler(config ArticleHandlerManagerConfig, onEvents ArticleHandlerOn
 		//
 		ctx := appengine.NewContext(r)
 		Debug(ctx, "OnBlobComplete ::"+articlId+"::"+dir+"::"+fileName+"::")
-		artObj, errGet := artHandlerObj.GetManager().GetArticleFromPointer(ctx, articlId)
+		artObj, _, errGet := artHandlerObj.GetManager().GetArticleFromPointer(ctx, articlId)
 		if errGet != nil {
 			Debug(ctx, "From Pointer GEt ER "+articlId)
 			return errGet

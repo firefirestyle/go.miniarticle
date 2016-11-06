@@ -197,6 +197,20 @@ func (mgrObj *ArticleManager) DeleteFromArticleId(ctx context.Context, articleId
 	return datastore.Delete(ctx, mgrObj.NewGaeObjectKey(ctx, articleId, sign, mgrObj.GetKind()))
 }
 
+func (mgrObj *ArticleManager) DeleteFromArticleIdWithPointer(ctx context.Context, articleId string) error {
+	artObj, pointerObj, _ := mgrObj.GetArticleFromPointer(ctx, articleId)
+	if artObj != nil {
+		deleteErr := mgrObj.DeleteFromArticleId(ctx, articleId, pointerObj.GetSign())
+		if deleteErr != nil {
+			return deleteErr
+		}
+	}
+	if pointerObj != nil {
+		return mgrObj.pointerMgr.DeleteFromPointer(ctx, pointerObj)
+	}
+	return nil
+}
+
 func (obj *ArticleManager) newCursorFromSrc(cursorSrc string) *datastore.Cursor {
 	c1, e := datastore.DecodeCursor(cursorSrc)
 	if e != nil {
@@ -215,17 +229,18 @@ func (obj *ArticleManager) makeCursorSrc(founds *datastore.Iterator) string {
 	}
 }
 
-func (obj *ArticleManager) GetArticleFromPointer(ctx context.Context, articleId string) (*Article, error) {
+func (obj *ArticleManager) GetArticleFromPointer(ctx context.Context, articleId string) (*Article, *minipointer.Pointer, error) {
 	pointerObj, pointerErr := obj.pointerMgr.GetPointer(ctx, articleId, minipointer.TypePointer)
 	if pointerErr != nil {
 		Debug(ctx, "---> pointer")
-		return nil, pointerErr
+		return nil, nil, pointerErr
 	}
 	pointerArticleId := pointerObj.GetValue()
 	pointerSign := pointerObj.GetSign()
 	Debug(ctx, "---> pointer "+":"+pointerArticleId+":"+pointerSign+":")
 
-	return obj.GetArticleFromArticleId(ctx, pointerArticleId, pointerSign)
+	artObj, artErr := obj.GetArticleFromArticleId(ctx, pointerArticleId, pointerSign)
+	return artObj, pointerObj, artErr
 }
 
 /*

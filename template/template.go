@@ -31,6 +31,7 @@ const (
 	UrlArtBlobGet         = "/api/v1/art/getblob"
 	UrlArtRequestBlobUrl  = "/api/v1/art/requestbloburl"
 	UrlArtCallbackBlobUrl = "/api/v1/art/callbackbloburl"
+	UrlArtDelete          = "/api/v1/art/delete"
 )
 
 //
@@ -175,6 +176,18 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 		tmpObj.GetArtHundlerObj(ctx).HandleBlobGet(w, r)
 	})
 
+	http.HandleFunc(UrlArtDelete, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		ctx := appengine.NewContext(r)
+		propObj := miniprop.NewMiniPropFromJsonReader(r.Body)
+		loginInfo := tmpObj.CheckLogin(r, propObj.GetString("token", ""))
+		if loginInfo.IsLogin == false {
+			tmpObj.GetArtHundlerObj(ctx).HandleError(w, r, nil, 4001, "failed to login")
+		} else {
+			tmpObj.GetArtHundlerObj(ctx).HandleDeleteBase(w, r, propObj.GetString("articleId", ""))
+		}
+	})
+	//
 }
 
 func Debug(ctx context.Context, message string) {
