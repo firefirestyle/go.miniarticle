@@ -9,13 +9,16 @@ import (
 )
 
 func (obj *ArticleHandler) HandleFind(w http.ResponseWriter, r *http.Request) {
-	propObj := miniprop.NewMiniProp()
-	ctx := appengine.NewContext(r)
 	values := r.URL.Query()
 	cursor := values.Get("cursor")
-	//	mode := values.Get("mode")
 	userName := values.Get("userName")
 	target := values.Get("target")
+	obj.HandleFindBase(w, r, cursor, userName, target)
+}
+
+func (obj *ArticleHandler) HandleFindBase(w http.ResponseWriter, r *http.Request, cursor, userName, target string) {
+	propObj := miniprop.NewMiniProp()
+	ctx := appengine.NewContext(r)
 	var foundObj *article.FoundArticles
 	if userName != "" {
 		foundObj = obj.GetManager().FindArticleFromUserName(ctx, userName, cursor, true)
