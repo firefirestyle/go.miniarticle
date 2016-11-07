@@ -17,6 +17,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	target := inputProp.GetString("target", "")
 	content := inputProp.GetString("content", "")
 	ownerName := inputProp.GetString("ownerName", "")
+	tags := inputProp.GetPropStringList("", "tags", nil)
 
 	//
 	//
@@ -33,6 +34,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	artObj.SetTarget(target)
 	artObj.SetCont(content)
 	artObj.SetUserName(ownerName)
+	artObj.SetTags(tags)
 	//
 	errNew := obj.OnNewBeforeSave(w, r, obj, artObj, inputProp, outputProp)
 	if nil != errNew {

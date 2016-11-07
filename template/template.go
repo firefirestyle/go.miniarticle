@@ -102,7 +102,7 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 			Debug(ctx, ">>>>>>>>>>>>>>>> ON GET ART SUCCESS A")
 			if pointerErr == nil {
 				Debug(ctx, ">>>>>>>>>>>>>>>> ON GET ART SUCCESS B : "+pointerObj.GetSign())
-				o.SetString("usrSign", pointerObj.GetSign())
+				o.SetString("userSign", pointerObj.GetSign())
 			}
 			return nil
 		})
