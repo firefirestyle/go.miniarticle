@@ -9,6 +9,7 @@ import (
 	miniblob "github.com/firefirestyle/go.miniblob/blob"
 	blobhandler "github.com/firefirestyle/go.miniblob/handler"
 	"github.com/firefirestyle/go.miniprop"
+	"github.com/firefirestyle/go.minitag/tag"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
@@ -27,6 +28,7 @@ type ArticleHandler struct {
 	pointerKind string
 	artMana     *article.ArticleManager
 	blobHundler *blobhandler.BlobHandler
+	tagMana     *tag.TagManager
 	onEvents    ArticleHandlerOnEvent
 }
 
@@ -36,6 +38,7 @@ type ArticleHandlerManagerConfig struct {
 	PointerKind     string
 	BlobKind        string
 	BlobPointerKind string
+	TagKind         string
 	BlobCallbackUrl string
 	BlobSign        string
 }
@@ -71,8 +74,11 @@ func NewArtHandler(config ArticleHandlerManagerConfig) *ArticleHandler {
 	if config.BlobPointerKind == "" {
 		config.BlobPointerKind = config.ArticleKind + "-blob-pointer"
 	}
-
+	if config.TagKind == "" {
+		config.TagKind = config.ArticleKind + "-tag"
+	}
 	artMana := article.NewArticleManager(config.RootGroup, config.ArticleKind, config.PointerKind, "art", 10)
+	tagMana := tag.NewTagManager(config.TagKind, config.RootGroup)
 	//
 	//
 	artHandlerObj := &ArticleHandler{
@@ -80,6 +86,7 @@ func NewArtHandler(config ArticleHandlerManagerConfig) *ArticleHandler {
 		articleKind: config.ArticleKind,
 		blobKind:    config.BlobKind,
 		artMana:     artMana,
+		tagMana:     tagMana,
 		onEvents:    ArticleHandlerOnEvent{},
 	}
 

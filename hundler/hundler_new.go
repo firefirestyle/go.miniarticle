@@ -48,18 +48,28 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 		obj.OnNewArtFailed(w, r, obj, inputProp, outputProp)
 		obj.HandleError(w, r, outputProp, ErrorCodeFailedToSave, errSave.Error())
 		return
-	} else {
-		propObj.SetPropString("", "articleId", artObj.GetArticleId())
-		errOnSc := obj.OnNewArtSuccess(w, r, obj, inputProp, outputProp)
-		if nil != errOnSc {
-			if nil != obj.GetManager().DeleteFromArticleId(ctx, artObj.GetArticleId(), "") {
-				Debug(ctx, "<GOMIDATA>articleId="+artObj.GetArticleId())
-			}
-			obj.OnNewArtFailed(w, r, obj, inputProp, outputProp)
-			obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnSc.Error())
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		w.Write(propObj.ToJson())
 	}
+	propObj.SetPropString("", "articleId", artObj.GetArticleId())
+	errOnSc := obj.OnNewArtSuccess(w, r, obj, inputProp, outputProp)
+	if nil != errOnSc {
+		if nil != obj.GetManager().DeleteFromArticleId(ctx, artObj.GetArticleId(), "") {
+			Debug(ctx, "<GOMIDATA>articleId="+artObj.GetArticleId())
+		}
+		obj.OnNewArtFailed(w, r, obj, inputProp, outputProp)
+		obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, errOnSc.Error())
+		return
+	}
+	///
+	// add tag
+	///
+	for _, v := range tags {
+		Debug(ctx, "tag-:"+v+":-")
+		if v == "" {
+			continue
+		}
+		obj.tagMana.AddBasicTag(ctx, v, "", "art://"+artObj.GetArticleId()+"@"+artObj.GetSign())
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(propObj.ToJson())
+
 }
