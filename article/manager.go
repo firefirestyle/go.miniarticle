@@ -95,14 +95,14 @@ func (obj *ArticleManager) SaveOnDB(ctx context.Context, artObj *Article) error 
 	return artObj.saveOnDB(ctx)
 }*/
 
-func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Article) error {
+func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Article) (*Article, error) {
 	sign := strconv.Itoa(time.Now().Nanosecond())
 	nextArObj := obj.NewArticleFromArticle(ctx, artObj, sign)
 	nextArObj.SetUpdated(time.Now())
 	saveErr := nextArObj.saveOnDB(ctx)
 	if saveErr != nil {
 		Debug(ctx, ".>>>>>>>> AAA")
-		return saveErr
+		return artObj, saveErr
 	}
 	pointerObj := obj.pointerMgr.GetPointerForRelayId(ctx, artObj.GetArticleId())
 	pointerObj.SetValue(nextArObj.GetArticleId())
@@ -117,12 +117,12 @@ func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Art
 		}
 		Debug(ctx, ".>>>>>>>> BBB")
 
-		return savePointerErr
+		return artObj, savePointerErr
 	}
 	if artObj.gaeObject.Sign != "0" {
 		obj.DeleteFromArticleId(ctx, artObj.GetArticleId(), artObj.GetSign())
 	}
-	return nil
+	return nextArObj, nil
 }
 
 func Debug(ctx context.Context, message string) {

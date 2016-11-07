@@ -51,9 +51,9 @@ func (obj *ArticleHandler) HandleUpdate(w http.ResponseWriter, r *http.Request) 
 	artObj.SetTags(tags)
 	//
 	//
-	errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
+	nextArtObj, errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
 	obj.tagMana.DeleteTagsFromOwner(appengine.NewContext(r), articleId)
-	obj.tagMana.AddBasicTags(ctx, tags, "art://"+artObj.GetGaeObjectKey().StringID(), artObj.GetArticleId(), "")
+	obj.tagMana.AddBasicTags(ctx, tags, "art://"+nextArtObj.GetGaeObjectKey().StringID(), artObj.GetArticleId(), "")
 
 	if errSave != nil {
 		obj.OnUpdateArtFailed(w, r, obj, inputProp, outputProp)

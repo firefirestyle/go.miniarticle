@@ -43,7 +43,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//
-	errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
+	nextArtObj, errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
 	if errSave != nil {
 		obj.OnNewArtFailed(w, r, obj, inputProp, outputProp)
 		obj.HandleError(w, r, outputProp, ErrorCodeFailedToSave, errSave.Error())
@@ -62,7 +62,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	///
 	// add tag
 	///
-	obj.tagMana.AddBasicTags(ctx, tags, "art://"+artObj.GetGaeObjectKey().StringID(), artObj.GetArticleId(), "")
+	obj.tagMana.AddBasicTags(ctx, tags, "art://"+nextArtObj.GetGaeObjectKey().StringID(), nextArtObj.GetArticleId(), "")
 	w.WriteHeader(http.StatusOK)
 	w.Write(propObj.ToJson())
 
