@@ -67,7 +67,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 		if v == "" {
 			continue
 		}
-		obj.tagMana.AddBasicTag(ctx, v, "", "art://"+artObj.GetArticleId()+"@"+artObj.GetSign())
+		obj.tagMana.AddBasicTag(ctx, v, "art://"+artObj.GetArticleId()+"@"+artObj.GetSign(), artObj.GetArticleId(), "")
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(propObj.ToJson())
