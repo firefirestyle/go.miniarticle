@@ -62,13 +62,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	///
 	// add tag
 	///
-	for _, v := range tags {
-		Debug(ctx, "tag-:"+v+":-")
-		if v == "" {
-			continue
-		}
-		obj.tagMana.AddBasicTag(ctx, v, "art://"+artObj.GetArticleId()+"@"+artObj.GetSign(), artObj.GetArticleId(), "")
-	}
+	obj.tagMana.AddBasicTags(ctx, tags, "art://"+artObj.GetArticleId()+"@"+artObj.GetSign(), artObj.GetArticleId(), "")
 	w.WriteHeader(http.StatusOK)
 	w.Write(propObj.ToJson())
 
