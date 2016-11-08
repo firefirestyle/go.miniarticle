@@ -109,7 +109,7 @@ func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Art
 	pointerObj.SetSign(nextArObj.gaeObject.Sign)
 	pointerObj.SetOwner(artObj.GetArticleId())
 	Debug(ctx, ".>>>>>>>> AAA > "+pointerObj.GetOwner())
-	savePointerErr := pointerObj.Save(ctx)
+	savePointerErr := obj.pointerMgr.Save(ctx, pointerObj)
 	if savePointerErr != nil {
 		err := obj.DeleteFromArticleId(ctx, nextArObj.GetArticleId(), nextArObj.gaeObject.Sign)
 		if err != nil {
