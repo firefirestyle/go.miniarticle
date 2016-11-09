@@ -6,7 +6,7 @@ import (
 	"errors"
 
 	"github.com/firefirestyle/go.miniarticle/article"
-	arthundler "github.com/firefirestyle/go.miniarticle/hundler"
+	arthundler "github.com/firefirestyle/go.miniarticle/handler"
 
 	blobhandler "github.com/firefirestyle/go.miniblob/handler"
 	"github.com/firefirestyle/go.miniprop"
