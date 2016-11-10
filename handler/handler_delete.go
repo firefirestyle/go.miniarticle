@@ -23,7 +23,7 @@ func (obj *ArticleHandler) HandleDeleteBase(w http.ResponseWriter, r *http.Reque
 // you must to delete file before call this method, if there are many articleid's file.
 //
 func (obj *ArticleHandler) HandleDeleteBaseWithFile(w http.ResponseWriter, r *http.Request, articleId string) {
-	obj.GetBlobHandler().GetManager().DeleteBlobItemsAtRecursiveMode(appengine.NewContext(r), obj.MakePath(articleId, ""))
+	obj.GetBlobHandler().GetManager().DeleteBlobItemsWithPointerAtRecursiveMode(appengine.NewContext(r), obj.MakePath(articleId, ""))
 	obj.tagMana.DeleteTagsFromOwner(appengine.NewContext(r), articleId)
 	obj.HandleDeleteBase(w, r, articleId)
 }
