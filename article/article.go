@@ -208,7 +208,7 @@ func (mgrObj *ArticleManager) DeleteFromArticleIdWithPointer(ctx context.Context
 	}
 	if pointerObj != nil {
 		Debug(ctx, "===> pointer DEL")
-		return mgrObj.pointerMgr.DeleteFromPointer(ctx, pointerObj)
+		return mgrObj.pointerMgr.DeletePointerFromObj(ctx, pointerObj)
 	}
 	return nil
 }
