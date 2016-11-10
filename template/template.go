@@ -38,9 +38,10 @@ const (
 //
 
 type ArtTemplateConfig struct {
-	GroupName    string
-	KindBaseName string
-	PrivateKey   string
+	GroupName                  string
+	KindBaseName               string
+	PrivateKey                 string
+	MemcachedOnlyInBlobPointer bool
 }
 
 type ArtTemplate struct {
@@ -74,11 +75,12 @@ func (tmpObj *ArtTemplate) CheckLogin(r *http.Request, token string) minisession
 func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.ArticleHandler {
 	if tmpObj.artHandlerObj == nil {
 		tmpObj.artHandlerObj = arthundler.NewArtHandler(
-			arthundler.ArticleHandlerManagerConfig{
+			arthundler.ArticleHandlerConfig{
 				RootGroup:       tmpObj.config.GroupName,
 				ArticleKind:     tmpObj.config.KindBaseName,
 				BlobCallbackUrl: UrlArtCallbackBlobUrl,
 				BlobSign:        appengine.VersionID(ctx),
+				MemcachedOnly:   tmpObj.config.MemcachedOnlyInBlobPointer,
 			})
 		tmpObj.artHandlerObj.AddOnNewBeforeSave(func(w http.ResponseWriter, r *http.Request, handler *arthundler.ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
 			ret := tmpObj.CheckLogin(r, input.GetString("token", ""))

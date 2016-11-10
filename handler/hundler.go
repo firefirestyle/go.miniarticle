@@ -32,7 +32,7 @@ type ArticleHandler struct {
 	onEvents    ArticleHandlerOnEvent
 }
 
-type ArticleHandlerManagerConfig struct {
+type ArticleHandlerConfig struct {
 	RootGroup       string
 	ArticleKind     string
 	PointerKind     string
@@ -41,6 +41,7 @@ type ArticleHandlerManagerConfig struct {
 	TagKind         string
 	BlobCallbackUrl string
 	BlobSign        string
+	MemcachedOnly   bool
 }
 
 type ArticleHandlerOnEvent struct {
@@ -58,7 +59,7 @@ type ArticleHandlerOnEvent struct {
 	OnGetArtSuccessList []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, a *article.Article, output *miniprop.MiniProp) error
 }
 
-func NewArtHandler(config ArticleHandlerManagerConfig) *ArticleHandler {
+func NewArtHandler(config ArticleHandlerConfig) *ArticleHandler {
 	if config.RootGroup == "" {
 		config.RootGroup = "ffstyle"
 	}
@@ -93,10 +94,11 @@ func NewArtHandler(config ArticleHandlerManagerConfig) *ArticleHandler {
 	//
 	artHandlerObj.blobHundler = blobhandler.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
 		miniblob.BlobManagerConfig{
-			RootGroup:   config.RootGroup,
-			Kind:        config.BlobKind,
-			CallbackUrl: config.BlobCallbackUrl,
-			PointerKind: config.BlobPointerKind,
+			RootGroup:     config.RootGroup,
+			Kind:          config.BlobKind,
+			CallbackUrl:   config.BlobCallbackUrl,
+			PointerKind:   config.BlobPointerKind,
+			MemcachedOnly: config.MemcachedOnly,
 		})
 	artHandlerObj.blobHundler.AddOnBlobBeforeSave(func(w http.ResponseWriter, r *http.Request, p *miniprop.MiniProp, h *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
 		dirSrc := r.URL.Query().Get("dir")
@@ -112,13 +114,13 @@ func NewArtHandler(config ArticleHandlerManagerConfig) *ArticleHandler {
 		//
 		//
 		ctx := appengine.NewContext(r)
-		Debug(ctx, "OnBlobComplete ::"+articlId+"::"+dir+"::"+fileName+"::")
+		//Debug(ctx, "OnBlobComplete ::"+articlId+"::"+dir+"::"+fileName+"::")
 		artObj, _, errGet := artHandlerObj.GetManager().GetArticleFromPointer(ctx, articlId)
 		if errGet != nil {
-			Debug(ctx, "From Pointer GEt ER "+articlId)
+			//Debug(ctx, "From Pointer GEt ER "+articlId)
 			return errGet
 		}
-		Debug(ctx, "=~====>> ICOM "+dir+"::"+fileName)
+		//s	Debug(ctx, "=~====>> ICOM "+dir+"::"+fileName)
 		if dir == "" && fileName == "icon" {
 			artObj.SetIconUrl("key://" + i.GetBlobKey())
 			// todo

@@ -104,7 +104,7 @@ func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Art
 		Debug(ctx, ".>>>>>>>> AAA")
 		return artObj, saveErr
 	}
-	pointerObj := obj.pointerMgr.GetPointerForRelayId(ctx, artObj.GetArticleId())
+	pointerObj := obj.pointerMgr.GetPointerWithNewForRelayId(ctx, artObj.GetArticleId())
 	pointerObj.SetValue(nextArObj.GetArticleId())
 	pointerObj.SetSign(nextArObj.gaeObject.Sign)
 	pointerObj.SetOwner(artObj.GetArticleId())
