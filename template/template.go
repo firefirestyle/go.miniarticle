@@ -63,7 +63,7 @@ func NewArtTemplate(config ArtTemplateConfig, getUserHundler func(context.Contex
 	}
 }
 
-func (tmpObj *ArtTemplate) setInitFunc(f func(ctx context.Context)) {
+func (tmpObj *ArtTemplate) SetInitFunc(f func(ctx context.Context)) {
 	tmpObj.initOpt = f
 }
 
