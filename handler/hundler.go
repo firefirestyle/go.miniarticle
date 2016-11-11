@@ -94,11 +94,11 @@ func NewArtHandler(config ArticleHandlerConfig) *ArticleHandler {
 	//
 	artHandlerObj.blobHundler = blobhandler.NewBlobHandler(config.BlobCallbackUrl, config.BlobSign,
 		miniblob.BlobManagerConfig{
-			RootGroup:     config.RootGroup,
-			Kind:          config.BlobKind,
-			CallbackUrl:   config.BlobCallbackUrl,
-			PointerKind:   config.BlobPointerKind,
-			MemcachedOnly: config.MemcachedOnly,
+			RootGroup:              config.RootGroup,
+			Kind:                   config.BlobKind,
+			CallbackUrl:            config.BlobCallbackUrl,
+			PointerKind:            config.BlobPointerKind,
+			MemcachedOnlyInPointer: config.MemcachedOnly,
 		})
 	artHandlerObj.blobHundler.AddOnBlobBeforeSave(func(w http.ResponseWriter, r *http.Request, p *miniprop.MiniProp, h *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
 		dirSrc := r.URL.Query().Get("dir")
