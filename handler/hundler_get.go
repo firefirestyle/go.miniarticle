@@ -45,7 +45,6 @@ func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	if sign != "" {
 		w.Header().Set("Cache-Control", "public, max-age=2592000")
 	}
-	Debug(ctx, "==========> S OnGetArtSuccess")
 	propObj = miniprop.NewMiniPropFromMap(artObj.ToMap())
 	errOnGAS := obj.OnGetArtSuccess(w, r, obj, artObj, propObj)
 	//
