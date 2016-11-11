@@ -46,6 +46,7 @@ type ArtTemplate struct {
 	config         ArtTemplateConfig
 	artHandlerObj  *arthundler.ArticleHandler
 	getUserHundler func(context.Context) *userHandler.UserHandler
+	initOpt        func(context.Context)
 }
 
 func NewArtTemplate(config ArtTemplateConfig, getUserHundler func(context.Context) *userHandler.UserHandler) *ArtTemplate {
@@ -62,11 +63,18 @@ func NewArtTemplate(config ArtTemplateConfig, getUserHundler func(context.Contex
 	}
 }
 
+func (tmpObj *ArtTemplate) setInitFunc(f func(ctx context.Context)) {
+	tmpObj.initOpt = f
+}
+
 var once = new(sync.Once)
 
 func (tmpObj *ArtTemplate) InitalizeTemplate(ctx context.Context) {
 	tmpObj.GetArtHundlerObj(ctx)
 	tmpObj.getUserHundler(ctx)
+	if tmpObj != nil {
+		tmpObj.initOpt(ctx)
+	}
 }
 
 func (tmpObj *ArtTemplate) CheckLogin(r *http.Request, token string) minisession.CheckLoginIdResult {
