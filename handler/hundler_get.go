@@ -45,14 +45,12 @@ func (obj *ArticleHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	if sign != "" {
 		w.Header().Set("Cache-Control", "public, max-age=2592000")
 	}
-	propObj = miniprop.NewMiniPropFromMap(artObj.ToMap())
 	errOnGAS := obj.OnGetArtSuccess(w, r, obj, artObj, propObj)
-	//
-
 	if errOnGAS != nil {
 		obj.OnGetArtFailed(w, r, obj, propObj)
 		obj.HandleError(w, r, propObj, ErrorCodeNotFoundArticleId, errOnGAS.Error())
 		return
 	}
+	propObj.CopiedOver(miniprop.NewMiniPropFromMap(artObj.ToMap()))
 	w.Write(propObj.ToJson())
 }
