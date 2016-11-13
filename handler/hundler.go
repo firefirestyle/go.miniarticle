@@ -57,6 +57,10 @@ type ArticleHandlerOnEvent struct {
 	OnGetArtRequestList []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, output *miniprop.MiniProp) error
 	OnGetArtFailedList  []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, output *miniprop.MiniProp)
 	OnGetArtSuccessList []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, a *article.Article, output *miniprop.MiniProp) error
+	//
+	OnDeleteArtRequestList []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
+	OnDeleteArtFailedList  []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)
+	OnDeleteArtSuccessList []func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error
 }
 
 func NewArtHandler(config ArticleHandlerConfig) *ArticleHandler {

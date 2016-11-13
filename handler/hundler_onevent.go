@@ -101,6 +101,8 @@ func (obj *ArticleHandler) OnUpdateArtSuccess(w http.ResponseWriter, r *http.Req
 }
 
 //
+// GET
+//
 func (obj *ArticleHandler) AddOnGetArtRequest(f func(w http.ResponseWriter, r *http.Request, h *ArticleHandler, o *miniprop.MiniProp) error) {
 	obj.onEvents.OnGetArtRequestList = append(obj.onEvents.OnGetArtRequestList, f)
 }
@@ -132,6 +134,48 @@ func (obj *ArticleHandler) AddOnGetArtSuccess(f func(w http.ResponseWriter, r *h
 }
 func (obj *ArticleHandler) OnGetArtSuccess(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *article.Article, o *miniprop.MiniProp) error {
 	for _, f := range obj.onEvents.OnGetArtSuccessList {
+		e := f(w, r, h, i, o)
+		if e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
+//
+// DELETE
+//
+func (obj *ArticleHandler) AddOnDeleteArtRequest(f func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error) {
+	obj.onEvents.OnDeleteArtRequestList = append(obj.onEvents.OnDeleteArtRequestList, f)
+}
+
+func (obj *ArticleHandler) OnDeleteArtRequest(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error {
+	for _, f := range obj.onEvents.OnDeleteArtRequestList {
+		e := f(w, r, h, i, o)
+		if e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
+//
+func (obj *ArticleHandler) AddOnDeleteArtFailed(f func(w http.ResponseWriter, r *http.Request, handler *ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp)) {
+	obj.onEvents.OnDeleteArtFailedList = append(obj.onEvents.OnDeleteArtFailedList, f)
+}
+
+func (obj *ArticleHandler) OnDeleteArtFailed(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) {
+	for _, f := range obj.onEvents.OnDeleteArtFailedList {
+		f(w, r, h, o, i)
+	}
+}
+
+//
+func (obj *ArticleHandler) AddOnDeleteArtSuccess(f func(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error) {
+	obj.onEvents.OnDeleteArtSuccessList = append(obj.onEvents.OnDeleteArtSuccessList, f)
+}
+func (obj *ArticleHandler) OnDeleteArtSuccess(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error {
+	for _, f := range obj.onEvents.OnDeleteArtSuccessList {
 		e := f(w, r, h, i, o)
 		if e != nil {
 			return e

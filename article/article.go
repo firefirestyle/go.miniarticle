@@ -14,9 +14,6 @@ import (
 	"google.golang.org/appengine/memcache"
 )
 
-type Tag struct {
-	Tag string
-}
 type GaeObjectArticle struct {
 	RootGroup string
 	UserName  string
