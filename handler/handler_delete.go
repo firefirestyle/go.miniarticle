@@ -11,11 +11,11 @@ import (
 //
 // you must to delete file before call this method, if there are many articleid's file.
 //
-func (obj *ArticleHandler) HandleDeleteBaseWithFile(w http.ResponseWriter, r *http.Request) {
+func (obj *ArticleHandler) HandleDeleteBaseWithFile(w http.ResponseWriter, r *http.Request, articleId string, inputObj *miniprop.MiniProp) {
 	ctx := appengine.NewContext(r)
 	outputObj := miniprop.NewMiniProp()
-	inputObj := miniprop.NewMiniPropFromJsonReader(r.Body)
-	articleId := inputObj.GetString("articleId", "")
+	//inputObj := miniprop.NewMiniPropFromJsonReader(r.Body)
+	//	articleId := inputObj.GetString("articleId", "")
 	reqCheckErr := obj.OnDeleteArtRequest(w, r, obj, inputObj, outputObj)
 	if reqCheckErr != nil {
 		obj.OnDeleteArtFailed(w, r, obj, inputObj, outputObj)
