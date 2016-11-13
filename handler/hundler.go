@@ -9,7 +9,7 @@ import (
 	miniblob "github.com/firefirestyle/go.miniblob/blob"
 	blobhandler "github.com/firefirestyle/go.miniblob/handler"
 	"github.com/firefirestyle/go.miniprop"
-	"github.com/firefirestyle/go.minitag/tag"
+	//	"github.com/firefirestyle/go.minitag/tag"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
@@ -28,8 +28,8 @@ type ArticleHandler struct {
 	pointerKind string
 	artMana     *article.ArticleManager
 	blobHundler *blobhandler.BlobHandler
-	tagMana     *tag.TagManager
-	onEvents    ArticleHandlerOnEvent
+	//	tagMana     *tag.TagManager
+	onEvents ArticleHandlerOnEvent
 }
 
 type ArticleHandlerConfig struct {
@@ -79,7 +79,7 @@ func NewArtHandler(config ArticleHandlerConfig) *ArticleHandler {
 		config.TagKind = config.ArticleKind + "-tag"
 	}
 	artMana := article.NewArticleManager(config.RootGroup, config.ArticleKind, config.PointerKind, "art", 10)
-	tagMana := tag.NewTagManager(config.TagKind, config.RootGroup)
+	//	tagMana := tag.NewTagManager(config.TagKind, config.RootGroup)
 	//
 	//
 	artHandlerObj := &ArticleHandler{
@@ -87,8 +87,8 @@ func NewArtHandler(config ArticleHandlerConfig) *ArticleHandler {
 		articleKind: config.ArticleKind,
 		blobKind:    config.BlobKind,
 		artMana:     artMana,
-		tagMana:     tagMana,
-		onEvents:    ArticleHandlerOnEvent{},
+		//		tagMana:     tagMana,
+		onEvents: ArticleHandlerOnEvent{},
 	}
 
 	//
@@ -124,9 +124,9 @@ func NewArtHandler(config ArticleHandlerConfig) *ArticleHandler {
 		if dir == "" && fileName == "icon" {
 			artObj.SetIconUrl("key://" + i.GetBlobKey())
 			// todo
-			nextArtObj, errSave := artHandlerObj.GetManager().SaveUsrWithImmutable(ctx, artObj)
-			artHandlerObj.tagMana.DeleteTagsFromOwner(appengine.NewContext(r), nextArtObj.GetArticleId())
-			artHandlerObj.tagMana.AddBasicTags(ctx, nextArtObj.GetTags(), "art://"+nextArtObj.GetGaeObjectKey().StringID(), artObj.GetArticleId(), "")
+			_, errSave := artHandlerObj.GetManager().SaveUsrWithImmutable(ctx, artObj)
+			//			artHandlerObj.tagMana.DeleteTagsFromOwner(appengine.NewContext(r), nextArtObj.GetArticleId())
+			//			artHandlerObj.tagMana.AddBasicTags(ctx, nextArtObj.GetTags(), "art://"+nextArtObj.GetGaeObjectKey().StringID(), artObj.GetArticleId(), "")
 
 			if errSave != nil {
 				return errSave

@@ -25,6 +25,16 @@ func (obj *ArticleManager) FindArticleFromUserName(ctx context.Context, userName
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }
 
+func (obj *ArticleManager) FindArticleFromTag(ctx context.Context, tags []string, cursorSrc string, keyOnly bool) *FoundArticles {
+	q := datastore.NewQuery(obj.kindArticle)
+	q = q.Filter("RootGroup =", obj.projectId)
+	for _, tag := range tags {
+		q = q.Filter("Tags.Tag =", tag) ////
+	}
+	q = q.Order("-Updated").Limit(obj.limitOfFinding)
+	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
+}
+
 func (obj *ArticleManager) FindArticleFromTarget(ctx context.Context, targetName string, cursorSrc string, keyOnly bool) *FoundArticles {
 	q := datastore.NewQuery(obj.kindArticle)
 	q = q.Filter("RootGroup =", obj.projectId)

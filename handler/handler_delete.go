@@ -24,6 +24,6 @@ func (obj *ArticleHandler) HandleDeleteBase(w http.ResponseWriter, r *http.Reque
 //
 func (obj *ArticleHandler) HandleDeleteBaseWithFile(w http.ResponseWriter, r *http.Request, articleId string) {
 	obj.GetBlobHandler().GetManager().DeleteBlobItemsWithPointerAtRecursiveMode(appengine.NewContext(r), obj.MakePath(articleId, ""))
-	obj.tagMana.DeleteTagsFromOwner(appengine.NewContext(r), articleId)
+	//	obj.tagMana.DeleteTagsFromOwner(appengine.NewContext(r), articleId)
 	obj.HandleDeleteBase(w, r, articleId)
 }
