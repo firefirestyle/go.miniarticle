@@ -51,7 +51,7 @@ func (userObj *Article) SetParamFromsMap(v map[string]interface{}) error {
 	userObj.gaeObject.RootGroup = propObj.GetString(TypeRootGroup, "")
 	userObj.gaeObject.UserName = propObj.GetString(TypeUserName, "")
 	userObj.gaeObject.Title = propObj.GetString(TypeTitle, "")
-	userObj.gaeObject.Tag = propObj.GetPropStringList2String("", TypeTag, make([]string, 0))
+	userObj.SetTags(propObj.GetPropStringList("", TypeTag, make([]string, 0)))
 	userObj.gaeObject.Cont = propObj.GetString(TypeCont, "")
 	userObj.gaeObject.Info = propObj.GetString(TypeInfo, "")
 	userObj.gaeObject.Type = propObj.GetString(TypeType, "")

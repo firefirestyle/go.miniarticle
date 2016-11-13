@@ -1,7 +1,7 @@
 package article
 
 import (
-	"encoding/json"
+	//	"encoding/json"
 	"time"
 
 	"golang.org/x/net/context"
@@ -14,13 +14,17 @@ import (
 	"google.golang.org/appengine/memcache"
 )
 
+type Tag struct {
+	Tag string
+}
 type GaeObjectArticle struct {
 	RootGroup string
 	UserName  string
 	Title     string `datastore:",noindex"`
-	Tag       string `datastore:",noindex"`
-	Cont      string `datastore:",noindex"`
-	Info      string `datastore:",noindex"`
+	//	Tags      []Tag
+	Tags      []string `datastore:"Tags.Tag"`
+	Cont      string   `datastore:",noindex"`
+	Info      string   `datastore:",noindex"`
 	Type      string
 	Sign      string `datastore:",noindex"`
 	ArticleId string
@@ -120,17 +124,20 @@ func (obj *Article) SetTitle(v string) {
 }
 
 func (obj *Article) GetTags() []string {
-	var tags []string
-	json.Unmarshal([]byte(obj.gaeObject.Tag), &tags)
-	return tags
+	ret := make([]string, 0)
+	for _, v := range obj.gaeObject.Tags {
+		//		ret = append(ret, v.Tag)
+		ret = append(ret, v)
+	}
+	return ret
 }
 
-func (obj *Article) SetTags(v []string) {
-	if v == nil || len(v) == 0 {
-		obj.gaeObject.Tag = ""
-	} else {
-		b, _ := json.Marshal(v)
-		obj.gaeObject.Tag = string(b)
+func (obj *Article) SetTags(vs []string) {
+	//	obj.gaeObject.Tags = make([]Tag, 0)
+	obj.gaeObject.Tags = make([]string, 0)
+	for _, v := range vs {
+		//		obj.gaeObject.Tags = append(obj.gaeObject.Tags, Tag{Tag: v})
+		obj.gaeObject.Tags = append(obj.gaeObject.Tags, v)
 	}
 }
 
