@@ -18,7 +18,6 @@ func (obj *Article) ToMap() map[string]interface{} {
 		TypeTag:         obj.GetTags(),          //
 		TypeCont:        obj.gaeObject.Cont,
 		TypeInfo:        obj.gaeObject.Info,
-		TypeType:        obj.gaeObject.Type,
 		TypePointNames:  obj.gaeObject.PointNames,  //
 		TypePointValues: obj.gaeObject.PointValues, //
 		TypePropNames:   obj.gaeObject.PropNames,   //
@@ -28,7 +27,6 @@ func (obj *Article) ToMap() map[string]interface{} {
 		TypeCreated:     obj.gaeObject.Created.UnixNano(),
 		TypeUpdated:     obj.gaeObject.Updated.UnixNano(),
 		TypeSecretKey:   obj.gaeObject.SecretKey,
-		TypeTarget:      obj.gaeObject.Target,
 		TypeIconUrl:     obj.gaeObject.IconUrl,
 	}
 }
@@ -62,13 +60,11 @@ func (userObj *Article) SetParamFromsMap(v map[string]interface{}) error {
 	userObj.gaeObject.PropNames = propObj.GetPropStringList("", TypePropNames, []string{})
 	userObj.gaeObject.Cont = propObj.GetString(TypeCont, "")
 	userObj.gaeObject.Info = propObj.GetString(TypeInfo, "")
-	userObj.gaeObject.Type = propObj.GetString(TypeType, "")
 	userObj.gaeObject.Sign = propObj.GetString(TypeSign, "")
 	userObj.gaeObject.ArticleId = propObj.GetString(TypeArticleId, "")
 	userObj.gaeObject.Created = propObj.GetTime(TypeCreated, time.Now()) //srcCreated
 	userObj.gaeObject.Updated = propObj.GetTime(TypeUpdated, time.Now()) //srcLogin
 	userObj.gaeObject.SecretKey = propObj.GetString(TypeSecretKey, "")
-	userObj.gaeObject.Target = propObj.GetString(TypeTarget, "")
 	userObj.gaeObject.IconUrl = propObj.GetString(TypeIconUrl, "")
 	return nil
 }

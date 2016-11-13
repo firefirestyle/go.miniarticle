@@ -1,6 +1,7 @@
 package article
 
 import (
+	"github.com/firefirestyle/go.miniprop"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 )
@@ -35,10 +36,14 @@ func (obj *ArticleManager) FindArticleFromTag(ctx context.Context, tags []string
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }
 
-func (obj *ArticleManager) FindArticleFromTarget(ctx context.Context, targetName string, cursorSrc string, keyOnly bool) *FoundArticles {
+func (obj *ArticleManager) FindArticleFromProp(ctx context.Context, name string, value string, cursorSrc string, keyOnly bool) *FoundArticles {
+	Debug(ctx, "======> Find Article target")
+	p := miniprop.NewMiniProp()
+	p.SetString(name, value)
+	v := string(p.ToJson())
 	q := datastore.NewQuery(obj.kindArticle)
 	q = q.Filter("RootGroup =", obj.projectId)
-	q = q.Filter("Target =", targetName) ////
+	q = q.Filter("Props.Value =", v) ////
 	q = q.Order("-Updated").Limit(obj.limitOfFinding)
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }

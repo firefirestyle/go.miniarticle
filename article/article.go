@@ -11,6 +11,7 @@ import (
 	//	"errors"
 
 	"github.com/firefirestyle/go.minipointer"
+	"github.com/firefirestyle/go.miniprop"
 	"google.golang.org/appengine/memcache"
 )
 
@@ -25,13 +26,11 @@ type GaeObjectArticle struct {
 	PropValues  []string  `datastore:"Props.Value"`
 	Cont        string    `datastore:",noindex"`
 	Info        string    `datastore:",noindex"`
-	Type        string
-	Sign        string `datastore:",noindex"`
+	Sign        string    `datastore:",noindex"`
 	ArticleId   string
 	Created     time.Time
 	Updated     time.Time
 	SecretKey   string `datastore:",noindex"`
-	Target      string
 	IconUrl     string `datastore:",noindex"`
 }
 
@@ -107,14 +106,6 @@ func (obj *Article) SetInfo(v string) {
 	obj.gaeObject.Info = v
 }
 
-func (obj *Article) GetTarget() string {
-	return obj.gaeObject.Target
-}
-
-func (obj *Article) SetTarget(v string) {
-	obj.gaeObject.Target = v
-}
-
 func (obj *Article) SetUserName(v string) {
 	obj.gaeObject.UserName = v
 }
@@ -151,14 +142,6 @@ func (obj *Article) GetCont() string {
 
 func (obj *Article) SetCont(v string) {
 	obj.gaeObject.Cont = v
-}
-
-func (obj *Article) GetState() string {
-	return obj.gaeObject.Type
-}
-
-func (obj *Article) SetState(v string) {
-	obj.gaeObject.Type = v
 }
 
 func (obj *Article) GetParentId() string {
@@ -228,11 +211,15 @@ func (obj *Article) GetProp(name string) string {
 	if index < 0 {
 		return ""
 	}
-	return obj.gaeObject.PropValues[index]
+	p := miniprop.NewMiniPropFromJson([]byte(obj.gaeObject.PropValues[index]))
+	return p.GetString(name, "")
 }
 
 func (obj *Article) SetProp(name, v string) {
 	index := -1
+	p := miniprop.NewMiniProp()
+	p.SetString(name, v)
+	v = string(p.ToJson())
 	for i, iv := range obj.gaeObject.PropNames {
 		if iv == name {
 			index = i

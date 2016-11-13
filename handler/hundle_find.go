@@ -27,12 +27,13 @@ func (obj *ArticleHandler) HandleFindBase(w http.ResponseWriter, r *http.Request
 	//if tag != "" {
 	//	obj.HandleFindTagBase(w, r, cursor, tag)
 	//} else {
+	Debug(ctx, ">>>>>>>>>>>>target ="+target)
 	if tag != "" {
 		foundObj = obj.GetManager().FindArticleFromTag(ctx, []string{tag}, cursor, true)
 	} else if userName != "" {
 		foundObj = obj.GetManager().FindArticleFromUserName(ctx, userName, cursor, true)
 	} else if target != "" {
-		foundObj = obj.GetManager().FindArticleFromTarget(ctx, target, cursor, true)
+		foundObj = obj.GetManager().FindArticleFromProp(ctx, "target", target, cursor, true)
 	} else {
 		foundObj = obj.GetManager().FindArticleWithNewOrder(ctx, cursor, true)
 	}

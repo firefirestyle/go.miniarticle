@@ -31,7 +31,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	//
 	artObj := obj.GetManager().NewArticle(ctx)
 	artObj.SetTitle(title)
-	artObj.SetTarget(target)
+	artObj.SetProp("target", target)
 	artObj.SetCont(content)
 	artObj.SetUserName(ownerName)
 	artObj.SetTags(tags)

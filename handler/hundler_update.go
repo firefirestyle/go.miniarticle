@@ -46,7 +46,7 @@ func (obj *ArticleHandler) HandleUpdate(w http.ResponseWriter, r *http.Request) 
 	//
 
 	artObj.SetTitle(title)
-	artObj.SetTarget(target)
+	artObj.SetProp("target", target)
 	artObj.SetCont(content)
 	artObj.SetTags(tags)
 	//
