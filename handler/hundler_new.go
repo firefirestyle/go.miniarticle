@@ -43,14 +43,14 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//
-	_, errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
+	nextArtObj, errSave := obj.GetManager().SaveUsrWithImmutable(ctx, artObj)
 	if errSave != nil {
 		obj.OnNewArtFailed(w, r, obj, inputProp, outputProp)
 		obj.HandleError(w, r, outputProp, ErrorCodeFailedToSave, errSave.Error())
 		return
 	}
-	propObj.SetPropString("", "articleId", artObj.GetArticleId())
-	errOnSc := obj.OnNewArtSuccess(w, r, obj, inputProp, outputProp)
+	propObj.SetPropString("", "articleId", nextArtObj.GetArticleId())
+	errOnSc := obj.OnNewArtSuccess(w, r, obj, nextArtObj, inputProp, outputProp)
 	if nil != errOnSc {
 		if nil != obj.GetManager().DeleteFromArticleId(ctx, artObj.GetArticleId(), "") {
 			Debug(ctx, "<GOMIDATA>articleId="+artObj.GetArticleId())

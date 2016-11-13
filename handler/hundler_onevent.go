@@ -47,13 +47,13 @@ func (obj *ArticleHandler) OnNewArtFailed(w http.ResponseWriter, r *http.Request
 }
 
 //
-func (obj *ArticleHandler) AddOnNewArtSucces(f func(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error) {
+func (obj *ArticleHandler) AddOnNewArtSucces(f func(w http.ResponseWriter, r *http.Request, h *ArticleHandler, artObj *article.Article, i *miniprop.MiniProp, o *miniprop.MiniProp) error) {
 	obj.onEvents.OnNewArtSuccessList = append(obj.onEvents.OnNewArtSuccessList, f)
 }
 
-func (obj *ArticleHandler) OnNewArtSuccess(w http.ResponseWriter, r *http.Request, h *ArticleHandler, i *miniprop.MiniProp, o *miniprop.MiniProp) error {
+func (obj *ArticleHandler) OnNewArtSuccess(w http.ResponseWriter, r *http.Request, h *ArticleHandler, artObj *article.Article, i *miniprop.MiniProp, o *miniprop.MiniProp) error {
 	for _, f := range obj.onEvents.OnNewArtSuccessList {
-		e := f(w, r, h, i, o)
+		e := f(w, r, h, artObj, i, o)
 		if e != nil {
 			return e
 		}
