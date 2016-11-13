@@ -16,22 +16,21 @@ import (
 )
 
 type GaeObjectArticle struct {
-	RootGroup   string
-	UserName    string
-	Title       string    `datastore:",noindex"`
-	Tags        []string  `datastore:"Tags.Tag"`
-	PointNames  []string  `datastore:"Points.Name"`
-	PointValues []float64 `datastore:"Points.Value"`
-	PropNames   []string  `datastore:"Props.Name"`
-	PropValues  []string  `datastore:"Props.Value"`
-	Cont        string    `datastore:",noindex"`
-	Info        string    `datastore:",noindex"`
-	Sign        string    `datastore:",noindex"`
-	ArticleId   string
-	Created     time.Time
-	Updated     time.Time
-	SecretKey   string `datastore:",noindex"`
-	IconUrl     string `datastore:",noindex"`
+	RootGroup  string
+	UserName   string
+	Title      string   `datastore:",noindex"`
+	Tags       []string `datastore:"Tags.Tag"`
+	Point      float64
+	PropNames  []string `datastore:"Props.Name"`
+	PropValues []string `datastore:"Props.Value"`
+	Cont       string   `datastore:",noindex"`
+	Info       string   `datastore:",noindex"`
+	Sign       string   `datastore:",noindex"`
+	ArticleId  string
+	Created    time.Time
+	Updated    time.Time
+	SecretKey  string `datastore:",noindex"`
+	IconUrl    string `datastore:",noindex"`
 }
 
 type Article struct {
@@ -41,24 +40,23 @@ type Article struct {
 }
 
 const (
-	TypeRootGroup   = "RootGroup"
-	TypeUserName    = "UserName"
-	TypeTitle       = "Title"
-	TypeTag         = "Tag"
-	TypePointNames  = "PointNames"
-	TypePointValues = "PointValues"
-	TypePropNames   = "PropNames"
-	TypePropValues  = "PropValues"
-	TypeCont        = "Cont"
-	TypeInfo        = "Info"
-	TypeType        = "Type"
-	TypeSign        = "Sign"
-	TypeArticleId   = "ArticleId"
-	TypeCreated     = "Created"
-	TypeUpdated     = "Updated"
-	TypeSecretKey   = "SecretKey"
-	TypeTarget      = "Target"
-	TypeIconUrl     = "IconUrl"
+	TypeRootGroup  = "RootGroup"
+	TypeUserName   = "UserName"
+	TypeTitle      = "Title"
+	TypeTag        = "Tag"
+	TypePoint      = "Point"
+	TypePropNames  = "PropNames"
+	TypePropValues = "PropValues"
+	TypeCont       = "Cont"
+	TypeInfo       = "Info"
+	TypeType       = "Type"
+	TypeSign       = "Sign"
+	TypeArticleId  = "ArticleId"
+	TypeCreated    = "Created"
+	TypeUpdated    = "Updated"
+	TypeSecretKey  = "SecretKey"
+	TypeTarget     = "Target"
+	TypeIconUrl    = "IconUrl"
 )
 
 func (obj *Article) updateMemcache(ctx context.Context) error {
@@ -170,34 +168,12 @@ func (obj *Article) SetUpdated(v time.Time) {
 
 //
 //
-func (obj *Article) GetPoint(name string) float64 {
-	index := -1
-	for i, v := range obj.gaeObject.PointNames {
-		if v == name {
-			index = i
-			break
-		}
-	}
-	if index < 0 {
-		return 0
-	}
-	return obj.gaeObject.PointValues[index]
+func (obj *Article) GetPoint() float64 {
+	return obj.gaeObject.Point
 }
 
-func (obj *Article) SetPoint(name string, v float64) {
-	index := -1
-	for i, iv := range obj.gaeObject.PointNames {
-		if iv == name {
-			index = i
-			break
-		}
-	}
-	if index == -1 {
-		obj.gaeObject.PointValues = append(obj.gaeObject.PointValues, v)
-		obj.gaeObject.PointNames = append(obj.gaeObject.PointNames, name)
-	} else {
-		obj.gaeObject.PointValues[index] = v
-	}
+func (obj *Article) SetPoint(v float64) {
+	obj.gaeObject.Point = v
 }
 
 func (obj *Article) GetProp(name string) string {

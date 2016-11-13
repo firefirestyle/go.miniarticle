@@ -12,22 +12,21 @@ import (
 //
 func (obj *Article) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		TypeRootGroup:   obj.gaeObject.RootGroup,
-		TypeUserName:    obj.gaeObject.UserName, //
-		TypeTitle:       obj.gaeObject.Title,    //
-		TypeTag:         obj.GetTags(),          //
-		TypeCont:        obj.gaeObject.Cont,
-		TypeInfo:        obj.gaeObject.Info,
-		TypePointNames:  obj.gaeObject.PointNames,  //
-		TypePointValues: obj.gaeObject.PointValues, //
-		TypePropNames:   obj.gaeObject.PropNames,   //
-		TypePropValues:  obj.gaeObject.PropValues,  //
-		TypeSign:        obj.gaeObject.Sign,
-		TypeArticleId:   obj.gaeObject.ArticleId,
-		TypeCreated:     obj.gaeObject.Created.UnixNano(),
-		TypeUpdated:     obj.gaeObject.Updated.UnixNano(),
-		TypeSecretKey:   obj.gaeObject.SecretKey,
-		TypeIconUrl:     obj.gaeObject.IconUrl,
+		TypeRootGroup:  obj.gaeObject.RootGroup,
+		TypeUserName:   obj.gaeObject.UserName, //
+		TypeTitle:      obj.gaeObject.Title,    //
+		TypeTag:        obj.GetTags(),          //
+		TypeCont:       obj.gaeObject.Cont,
+		TypeInfo:       obj.gaeObject.Info,
+		TypePoint:      obj.gaeObject.Point,
+		TypePropNames:  obj.gaeObject.PropNames,  //
+		TypePropValues: obj.gaeObject.PropValues, //
+		TypeSign:       obj.gaeObject.Sign,
+		TypeArticleId:  obj.gaeObject.ArticleId,
+		TypeCreated:    obj.gaeObject.Created.UnixNano(),
+		TypeUpdated:    obj.gaeObject.Updated.UnixNano(),
+		TypeSecretKey:  obj.gaeObject.SecretKey,
+		TypeIconUrl:    obj.gaeObject.IconUrl,
 	}
 }
 func (obj *Article) ToMapPublicOnly() map[string]interface{} {
@@ -54,8 +53,7 @@ func (userObj *Article) SetParamFromsMap(v map[string]interface{}) error {
 	userObj.gaeObject.UserName = propObj.GetString(TypeUserName, "")
 	userObj.gaeObject.Title = propObj.GetString(TypeTitle, "")
 	userObj.SetTags(propObj.GetPropStringList("", TypeTag, make([]string, 0)))
-	userObj.gaeObject.PointValues = propObj.GetPropFloatList("", TypePointValues, []float64{})
-	userObj.gaeObject.PointNames = propObj.GetPropStringList("", TypePointNames, []string{})
+	userObj.gaeObject.Point = propObj.GetPropFloat64("", TypePoint, 0)
 	userObj.gaeObject.PropValues = propObj.GetPropStringList("", TypePropValues, []string{})
 	userObj.gaeObject.PropNames = propObj.GetPropStringList("", TypePropNames, []string{})
 	userObj.gaeObject.Cont = propObj.GetString(TypeCont, "")
