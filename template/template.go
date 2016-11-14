@@ -77,9 +77,9 @@ func (tmpObj *ArtTemplate) InitalizeTemplate(ctx context.Context) {
 	}
 }
 
-func (tmpObj *ArtTemplate) CheckLogin(r *http.Request, token string) minisession.CheckLoginIdResult {
+func (tmpObj *ArtTemplate) CheckLogin(r *http.Request, token string, useIp bool) minisession.CheckLoginIdResult {
 
-	return tmpObj.getUserHundler(appengine.NewContext(r)).CheckLogin(r, token)
+	return tmpObj.getUserHundler(appengine.NewContext(r)).CheckLogin(r, token, useIp)
 }
 
 func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.ArticleHandler {
@@ -93,7 +93,7 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 				MemcachedOnly:   tmpObj.config.MemcachedOnlyInBlobPointer,
 			})
 		tmpObj.artHandlerObj.AddOnNewBeforeSave(func(w http.ResponseWriter, r *http.Request, handler *arthundler.ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-			ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
+			ret := tmpObj.CheckLogin(r, input.GetString("token", ""), true)
 			if ret.IsLogin == false {
 				return errors.New("Failed in token check")
 			} else {
@@ -102,7 +102,7 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 			}
 		})
 		tmpObj.artHandlerObj.AddOnUpdateRequest(func(w http.ResponseWriter, r *http.Request, handler *arthundler.ArticleHandler, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
-			ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
+			ret := tmpObj.CheckLogin(r, input.GetString("token", ""), true)
 			if ret.IsLogin == false {
 				return errors.New("Failed in token check")
 			} else {
@@ -117,7 +117,7 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 			return nil
 		})
 		tmpObj.artHandlerObj.GetBlobHandler().AddOnBlobRequest(func(w http.ResponseWriter, r *http.Request, input *miniprop.MiniProp, output *miniprop.MiniProp, h *blobhandler.BlobHandler) (map[string]string, error) {
-			ret := tmpObj.CheckLogin(r, input.GetString("token", ""))
+			ret := tmpObj.CheckLogin(r, input.GetString("token", ""), true)
 			if ret.IsLogin == false {
 				return map[string]string{}, errors.New("Failed in token check")
 			}
@@ -167,7 +167,7 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 			tmpObj.InitalizeTemplate(ctx)
 		})
 		propObj := miniprop.NewMiniPropFromJsonReader(r.Body)
-		loginInfo := tmpObj.CheckLogin(r, propObj.GetString("token", ""))
+		loginInfo := tmpObj.CheckLogin(r, propObj.GetString("token", ""), true)
 		if loginInfo.IsLogin == false {
 			tmpObj.GetArtHundlerObj(ctx).HandleError(w, r, nil, 4001, "failed to login")
 		} else {
@@ -220,7 +220,7 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 			tmpObj.InitalizeTemplate(ctx)
 		})
 		propObj := miniprop.NewMiniPropFromJsonReader(r.Body)
-		loginInfo := tmpObj.CheckLogin(r, propObj.GetString("token", ""))
+		loginInfo := tmpObj.CheckLogin(r, propObj.GetString("token", ""), true)
 		if loginInfo.IsLogin == false {
 			tmpObj.GetArtHundlerObj(ctx).HandleError(w, r, nil, 4001, "failed to login")
 		} else {
