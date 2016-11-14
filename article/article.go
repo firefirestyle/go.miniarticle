@@ -1,14 +1,10 @@
 package article
 
 import (
-	//	"encoding/json"
 	"time"
 
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
-	//	"google.golang.org/appengine/log"
-	//"google.golang.org/appengine/blobstore"
-	//	"errors"
 
 	"github.com/firefirestyle/go.minipointer"
 	"github.com/firefirestyle/go.miniprop"
@@ -119,17 +115,14 @@ func (obj *Article) SetTitle(v string) {
 func (obj *Article) GetTags() []string {
 	ret := make([]string, 0)
 	for _, v := range obj.gaeObject.Tags {
-		//		ret = append(ret, v.Tag)
 		ret = append(ret, v)
 	}
 	return ret
 }
 
 func (obj *Article) SetTags(vs []string) {
-	//	obj.gaeObject.Tags = make([]Tag, 0)
 	obj.gaeObject.Tags = make([]string, 0)
 	for _, v := range vs {
-		//		obj.gaeObject.Tags = append(obj.gaeObject.Tags, Tag{Tag: v})
 		obj.gaeObject.Tags = append(obj.gaeObject.Tags, v)
 	}
 }
@@ -213,10 +206,7 @@ func (obj *Article) SetProp(name, v string) {
 //
 //
 //
-// ArticleManager
-
 func (obj *Article) saveOnDB(ctx context.Context) error {
-	Debug(ctx, "<saveOnDB> "+obj.gaeObjectKey.StringID())
 	_, err := datastore.Put(ctx, obj.gaeObjectKey, obj.gaeObject)
 	obj.updateMemcache(ctx)
 	return err
@@ -236,14 +226,12 @@ func (mgrObj *ArticleManager) DeleteFromArticleId(ctx context.Context, articleId
 func (mgrObj *ArticleManager) DeleteFromArticleIdWithPointer(ctx context.Context, articleId string) error {
 	artObj, pointerObj, _ := mgrObj.GetArticleFromPointer(ctx, articleId)
 	if artObj != nil {
-		Debug(ctx, "===> art DEL")
 		deleteErr := mgrObj.DeleteFromArticleId(ctx, articleId, pointerObj.GetSign())
 		if deleteErr != nil {
 			return deleteErr
 		}
 	}
 	if pointerObj != nil {
-		Debug(ctx, "===> pointer DEL")
 		return mgrObj.pointerMgr.DeletePointerFromObj(ctx, pointerObj)
 	}
 	return nil
@@ -270,12 +258,10 @@ func (obj *ArticleManager) makeCursorSrc(founds *datastore.Iterator) string {
 func (obj *ArticleManager) GetArticleFromPointer(ctx context.Context, articleId string) (*Article, *minipointer.Pointer, error) {
 	pointerObj, pointerErr := obj.pointerMgr.GetPointer(ctx, articleId, minipointer.TypePointer)
 	if pointerErr != nil {
-		Debug(ctx, "---> pointer")
 		return nil, nil, pointerErr
 	}
 	pointerArticleId := pointerObj.GetValue()
 	pointerSign := pointerObj.GetSign()
-	Debug(ctx, "---> pointer "+":"+pointerArticleId+":"+pointerSign+":")
 
 	artObj, artErr := obj.GetArticleFromArticleId(ctx, pointerArticleId, pointerSign)
 	return artObj, pointerObj, artErr
@@ -284,19 +270,3 @@ func (obj *ArticleManager) GetArticleFromPointer(ctx context.Context, articleId 
 func (obj *ArticleManager) GetPointerFromArticleId(ctx context.Context, articleId string) (*minipointer.Pointer, error) {
 	return obj.pointerMgr.GetPointer(ctx, articleId, minipointer.TypePointer)
 }
-
-/*
-func (obj *ArticleManager) GetArticleFromArticleIdOnQuery(ctx context.Context, articleId string) (*Article, error) {
-	q := datastore.NewQuery(obj.kindArticle)
-	q = q.Filter("ProjectId =", obj.projectId)
-	q = q.Filter("ArticleId =", articleId)
-	arts := obj.FindArticleFromQuery(ctx, q, "", false)
-	if len(arts.Articles) > 0 {
-		Debug(ctx, "======> A")
-		return arts.Articles[0], nil
-	} else {
-		Debug(ctx, "======> B : "+obj.projectId+" : "+articleId)
-		return nil, errors.New("--")
-	}
-}
-*/
