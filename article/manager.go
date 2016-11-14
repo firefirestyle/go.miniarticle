@@ -22,6 +22,7 @@ type ArticleManagerConfig struct {
 	KindPointer    string
 	PrefixOfId     string
 	LimitOfFinding int
+	LengthHash     int
 }
 type ArticleManager struct {
 	pointerMgr *minipointer.PointerManager
@@ -44,7 +45,6 @@ func NewArticleManager(config ArticleManagerConfig) *ArticleManager {
 	if config.LimitOfFinding <= 0 {
 		config.LimitOfFinding = 20
 	}
-
 	ret := new(ArticleManager)
 	ret.config = config
 	ret.pointerMgr = minipointer.NewPointerManager(minipointer.PointerManagerConfig{
@@ -64,7 +64,7 @@ func (obj *ArticleManager) GetPointerMgr() *minipointer.PointerManager {
 
 func (obj *ArticleManager) makeArticleId(created time.Time, secretKey string) string {
 	hashKey := obj.hashStr(fmt.Sprintf("p:%s;s:%s;c:%d;", obj.config.PrefixOfId, secretKey, created.UnixNano()))
-	return "" + obj.config.PrefixOfId + "-v1e-" + hashKey
+	return "1-" + obj.config.PrefixOfId + "-" + hashKey
 }
 
 func (obj *ArticleManager) makeStringId(articleId string, sign string) string {
@@ -96,7 +96,14 @@ func (obj *ArticleManager) hash(v string) string {
 func (obj *ArticleManager) hashStr(v string) string {
 	sha1Obj := sha1.New()
 	sha1Obj.Write([]byte(v))
-	return string(base32.StdEncoding.EncodeToString(sha1Obj.Sum(nil)))
+	articleIdHash := string(base32.StdEncoding.EncodeToString(sha1Obj.Sum(nil)))
+	if obj.config.LengthHash > 5 {
+		leng := len(articleIdHash)
+		if leng > obj.config.LengthHash {
+			articleIdHash = articleIdHash[:leng]
+		}
+	}
+	return articleIdHash
 }
 
 func (obj *ArticleManager) makeRandomId() string {
@@ -105,32 +112,24 @@ func (obj *ArticleManager) makeRandomId() string {
 	return strconv.FormatUint(n, 36)
 }
 
-/*
-func (obj *ArticleManager) SaveOnDB(ctx context.Context, artObj *Article) error {
-	return artObj.saveOnDB(ctx)
-}*/
-
 func (obj *ArticleManager) SaveUsrWithImmutable(ctx context.Context, artObj *Article) (*Article, error) {
 	sign := strconv.Itoa(time.Now().Nanosecond())
 	nextArObj := obj.NewArticleFromArticle(ctx, artObj, sign)
 	nextArObj.SetUpdated(time.Now())
 	saveErr := nextArObj.saveOnDB(ctx)
 	if saveErr != nil {
-		Debug(ctx, ".>>>>>>>> AAA")
 		return artObj, saveErr
 	}
 	pointerObj := obj.pointerMgr.GetPointerWithNewForRelayId(ctx, artObj.GetArticleId())
 	pointerObj.SetValue(nextArObj.GetArticleId())
 	pointerObj.SetSign(nextArObj.gaeObject.Sign)
 	pointerObj.SetOwner(artObj.GetArticleId())
-	Debug(ctx, ".>>>>>>>> AAA > "+pointerObj.GetOwner())
 	savePointerErr := obj.pointerMgr.Save(ctx, pointerObj)
 	if savePointerErr != nil {
 		err := obj.DeleteFromArticleId(ctx, nextArObj.GetArticleId(), nextArObj.gaeObject.Sign)
 		if err != nil {
 			Debug(ctx, "<GOMIDATA>"+nextArObj.GetArticleId()+":"+nextArObj.gaeObject.Sign+"<GOMIDATA>")
 		}
-		Debug(ctx, ".>>>>>>>> BBB")
 
 		return artObj, savePointerErr
 	}
