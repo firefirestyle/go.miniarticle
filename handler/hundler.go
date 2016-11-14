@@ -82,7 +82,13 @@ func NewArtHandler(config ArticleHandlerConfig) *ArticleHandler {
 	if config.TagKind == "" {
 		config.TagKind = config.ArticleKind + "-tag"
 	}
-	artMana := article.NewArticleManager(config.RootGroup, config.ArticleKind, config.PointerKind, "art", 10)
+	artMana := article.NewArticleManager(article.ArticleManagerConfig{
+		RootGroup:      config.RootGroup,
+		KindArticle:    config.ArticleKind,
+		KindPointer:    config.PointerKind,
+		PrefixOfId:     "art",
+		LimitOfFinding: 20,
+	})
 	//	tagMana := tag.NewTagManager(config.TagKind, config.RootGroup)
 	//
 	//

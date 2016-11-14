@@ -19,20 +19,20 @@ type FoundArticles struct {
 }
 
 func (obj *ArticleManager) FindArticleFromUserName(ctx context.Context, userName string, cursorSrc string, keyOnly bool) *FoundArticles {
-	q := datastore.NewQuery(obj.kindArticle)
-	q = q.Filter("RootGroup =", obj.projectId)
+	q := datastore.NewQuery(obj.config.KindArticle)
+	q = q.Filter("RootGroup =", obj.config.RootGroup)
 	q = q.Filter("UserName =", userName) ////
-	q = q.Order("-Updated").Limit(obj.limitOfFinding)
+	q = q.Order("-Updated").Limit(obj.config.LimitOfFinding)
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }
 
 func (obj *ArticleManager) FindArticleFromTag(ctx context.Context, tags []string, cursorSrc string, keyOnly bool) *FoundArticles {
-	q := datastore.NewQuery(obj.kindArticle)
-	q = q.Filter("RootGroup =", obj.projectId)
+	q := datastore.NewQuery(obj.config.KindArticle)
+	q = q.Filter("RootGroup =", obj.config.RootGroup)
 	for _, tag := range tags {
 		q = q.Filter("Tags.Tag =", tag) ////
 	}
-	q = q.Order("-Updated").Limit(obj.limitOfFinding)
+	q = q.Order("-Updated").Limit(obj.config.LimitOfFinding)
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }
 
@@ -41,16 +41,16 @@ func (obj *ArticleManager) FindArticleFromProp(ctx context.Context, name string,
 	p := miniprop.NewMiniProp()
 	p.SetString(name, value)
 	v := string(p.ToJson())
-	q := datastore.NewQuery(obj.kindArticle)
-	q = q.Filter("RootGroup =", obj.projectId)
+	q := datastore.NewQuery(obj.config.KindArticle)
+	q = q.Filter("RootGroup =", obj.config.RootGroup)
 	q = q.Filter("Props.Value =", v) ////
-	q = q.Order("-Updated").Limit(obj.limitOfFinding)
+	q = q.Order("-Updated").Limit(obj.config.LimitOfFinding)
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }
 
 func (obj *ArticleManager) FindArticleWithNewOrder(ctx context.Context, cursorSrc string, keyOnly bool) *FoundArticles {
-	q := datastore.NewQuery(obj.kindArticle)
-	q = q.Filter("RootGroup =", obj.projectId)
+	q := datastore.NewQuery(obj.config.KindArticle)
+	q = q.Filter("RootGroup =", obj.config.RootGroup)
 	//	q = q.Order("-Updated").Limit(obj.limitOfFinding)
 
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)

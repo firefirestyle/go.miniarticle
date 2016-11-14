@@ -16,31 +16,46 @@ import (
 	"google.golang.org/appengine/log"
 )
 
+type ArticleManagerConfig struct {
+	RootGroup      string
+	KindArticle    string
+	KindPointer    string
+	PrefixOfId     string
+	LimitOfFinding int
+}
 type ArticleManager struct {
-	projectId      string
-	prefixOfId     string
-	kindArticle    string
-	kindPointer    string
-	pointerMgr     *minipointer.PointerManager
-	limitOfFinding int
+	pointerMgr *minipointer.PointerManager
+	config     ArticleManagerConfig
 }
 
-func NewArticleManager(projectId string, kindArticle string, kindPointer string, prefixOfId string, limitOfFinding int) *ArticleManager {
+func NewArticleManager(config ArticleManagerConfig) *ArticleManager {
+	if config.RootGroup == "" {
+		config.RootGroup = "FFArt"
+	}
+	if config.KindArticle == "" {
+		config.KindArticle = "FFArt"
+	}
+	if config.KindPointer == "" {
+		config.KindPointer = config.KindArticle + "pointer"
+	}
+	if config.PrefixOfId == "" {
+		config.PrefixOfId = "ffart"
+	}
+	if config.LimitOfFinding <= 0 {
+		config.LimitOfFinding = 20
+	}
+
 	ret := new(ArticleManager)
-	ret.projectId = projectId
-	ret.prefixOfId = prefixOfId
-	ret.kindArticle = kindArticle
-	ret.kindPointer = kindPointer
-	ret.limitOfFinding = limitOfFinding
+	ret.config = config
 	ret.pointerMgr = minipointer.NewPointerManager(minipointer.PointerManagerConfig{
-		RootGroup: projectId,
-		Kind:      kindPointer,
+		RootGroup: config.RootGroup,
+		Kind:      config.KindPointer,
 	})
 	return ret
 }
 
 func (obj *ArticleManager) GetKind() string {
-	return obj.kindArticle
+	return obj.config.KindArticle
 }
 
 func (obj *ArticleManager) GetPointerMgr() *minipointer.PointerManager {
@@ -48,8 +63,8 @@ func (obj *ArticleManager) GetPointerMgr() *minipointer.PointerManager {
 }
 
 func (obj *ArticleManager) makeArticleId(created time.Time, secretKey string) string {
-	hashKey := obj.hashStr(fmt.Sprintf("p:%s;s:%s;c:%d;", obj.prefixOfId, secretKey, created.UnixNano()))
-	return "" + obj.prefixOfId + "-v1e-" + hashKey
+	hashKey := obj.hashStr(fmt.Sprintf("p:%s;s:%s;c:%d;", obj.config.PrefixOfId, secretKey, created.UnixNano()))
+	return "" + obj.config.PrefixOfId + "-v1e-" + hashKey
 }
 
 func (obj *ArticleManager) makeStringId(articleId string, sign string) string {

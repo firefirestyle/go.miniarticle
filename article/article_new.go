@@ -40,7 +40,7 @@ func (obj *ArticleManager) NewArticleFromMemcache(ctx context.Context, stringId 
 	ret.gaeObject = new(GaeObjectArticle)
 	idInfo := obj.ExtractInfoFromStringId(stringId)
 	ret.gaeObjectKey = obj.NewGaeObjectKey(ctx, idInfo.ArticleId, idInfo.Sign, "")
-	ret.kind = obj.kindArticle
+	ret.kind = obj.config.KindArticle
 	artObjSource, errGetFMem := memcache.Get(ctx, ret.gaeObjectKey.StringID())
 	if errGetFMem != nil {
 		return nil, errGetFMem
@@ -54,7 +54,7 @@ func (obj *ArticleManager) NewArticleFromGaeObject(ctx context.Context, gaeKey *
 	ret := new(Article)
 	ret.gaeObject = gaeObj
 	ret.gaeObjectKey = gaeKey
-	ret.kind = obj.kindArticle
+	ret.kind = obj.config.KindArticle
 	//
 	//
 
@@ -64,7 +64,7 @@ func (obj *ArticleManager) NewArticleFromGaeObject(ctx context.Context, gaeKey *
 func (obj *ArticleManager) NewArticleFromArticle(ctx context.Context, baseArtObj *Article, sign string) *Article {
 	//
 	ret := new(Article)
-	ret.kind = obj.kindArticle
+	ret.kind = obj.config.KindArticle
 	ret.gaeObject = &GaeObjectArticle{}
 	ret.gaeObjectKey = obj.NewGaeObjectKey(ctx, baseArtObj.GetArticleId(), sign, "")
 
@@ -96,10 +96,10 @@ func (obj *ArticleManager) NewArticle(ctx context.Context) *Article {
 	}
 	//
 	ret := new(Article)
-	ret.kind = obj.kindArticle
+	ret.kind = obj.config.KindArticle
 	ret.gaeObject = &art
 	ret.gaeObjectKey = key
-	ret.gaeObject.RootGroup = obj.projectId
+	ret.gaeObject.RootGroup = obj.config.RootGroup
 	ret.gaeObject.Sign = sign
 	ret.gaeObject.Created = created
 	ret.gaeObject.Updated = created
@@ -114,7 +114,7 @@ func (obj *ArticleManager) NewArticle(ctx context.Context) *Article {
 
 func (obj *ArticleManager) NewGaeObjectKey(ctx context.Context, articleId string, sign string, kind string) *datastore.Key {
 	if kind == "" {
-		kind = obj.kindArticle
+		kind = obj.config.KindArticle
 	}
 	return datastore.NewKey(ctx, kind, obj.makeStringId(articleId, sign), 0, nil)
 }
