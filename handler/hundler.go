@@ -42,6 +42,7 @@ type ArticleHandlerConfig struct {
 	BlobCallbackUrl string
 	BlobSign        string
 	MemcachedOnly   bool
+	LengthHash      int
 }
 
 type ArticleHandlerOnEvent struct {
@@ -88,6 +89,7 @@ func NewArtHandler(config ArticleHandlerConfig) *ArticleHandler {
 		KindPointer:    config.PointerKind,
 		PrefixOfId:     "art",
 		LimitOfFinding: 20,
+		LengthHash:     config.LengthHash,
 	})
 	//	tagMana := tag.NewTagManager(config.TagKind, config.RootGroup)
 	//
@@ -109,6 +111,7 @@ func NewArtHandler(config ArticleHandlerConfig) *ArticleHandler {
 			CallbackUrl:            config.BlobCallbackUrl,
 			PointerKind:            config.BlobPointerKind,
 			MemcachedOnlyInPointer: config.MemcachedOnly,
+			HashLength:             10,
 		})
 	artHandlerObj.blobHundler.AddOnBlobBeforeSave(func(w http.ResponseWriter, r *http.Request, p *miniprop.MiniProp, h *blobhandler.BlobHandler, i *miniblob.BlobItem) error {
 		dirSrc := r.URL.Query().Get("dir")

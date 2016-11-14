@@ -101,6 +101,7 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 				BlobCallbackUrl: UrlArtCallbackBlobUrl,
 				BlobSign:        appengine.VersionID(ctx),
 				MemcachedOnly:   tmpObj.config.MemcachedOnlyInBlobPointer,
+				LengthHash:      10,
 			})
 		tmpObj.artHandlerObj.AddOnNewBeforeSave(func(w http.ResponseWriter, r *http.Request, handler *arthundler.ArticleHandler, artObj *article.Article, input *miniprop.MiniProp, output *miniprop.MiniProp) error {
 			ret := tmpObj.CheckLogin(r, input.GetString("token", ""), true)
