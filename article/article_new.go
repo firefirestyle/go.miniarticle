@@ -3,6 +3,7 @@ package article
 import (
 	"time"
 
+	"github.com/firefirestyle/go.minipointer"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
@@ -116,4 +117,54 @@ func (obj *ArticleManager) NewGaeObjectKey(ctx context.Context, articleId string
 		kind = obj.kindArticle
 	}
 	return datastore.NewKey(ctx, kind, obj.makeStringId(articleId, sign), 0, nil)
+}
+
+//
+//
+//
+func (obj *Article) saveOnDB(ctx context.Context) error {
+	_, err := datastore.Put(ctx, obj.gaeObjectKey, obj.gaeObject)
+	obj.updateMemcache(ctx)
+	return err
+}
+
+func (mgrObj *ArticleManager) SaveOnOtherDB(ctx context.Context, obj *Article, kind string) error {
+	_, err := datastore.Put(ctx, mgrObj.NewGaeObjectKey(ctx, obj.GetArticleId(), obj.gaeObject.Sign, kind), obj.gaeObject)
+	return err
+}
+
+func (mgrObj *ArticleManager) DeleteFromArticleId(ctx context.Context, articleId string, sign string) error {
+	key := mgrObj.NewGaeObjectKey(ctx, articleId, sign, mgrObj.GetKind())
+	memcache.Delete(ctx, key.StringID())
+	return datastore.Delete(ctx, mgrObj.NewGaeObjectKey(ctx, articleId, sign, mgrObj.GetKind()))
+}
+
+func (mgrObj *ArticleManager) DeleteFromArticleIdWithPointer(ctx context.Context, articleId string) error {
+	artObj, pointerObj, _ := mgrObj.GetArticleFromPointer(ctx, articleId)
+	if artObj != nil {
+		deleteErr := mgrObj.DeleteFromArticleId(ctx, articleId, pointerObj.GetSign())
+		if deleteErr != nil {
+			return deleteErr
+		}
+	}
+	if pointerObj != nil {
+		return mgrObj.pointerMgr.DeletePointerFromObj(ctx, pointerObj)
+	}
+	return nil
+}
+
+func (obj *ArticleManager) GetArticleFromPointer(ctx context.Context, articleId string) (*Article, *minipointer.Pointer, error) {
+	pointerObj, pointerErr := obj.pointerMgr.GetPointer(ctx, articleId, minipointer.TypePointer)
+	if pointerErr != nil {
+		return nil, nil, pointerErr
+	}
+	pointerArticleId := pointerObj.GetValue()
+	pointerSign := pointerObj.GetSign()
+
+	artObj, artErr := obj.GetArticleFromArticleId(ctx, pointerArticleId, pointerSign)
+	return artObj, pointerObj, artErr
+}
+
+func (obj *ArticleManager) GetPointerFromArticleId(ctx context.Context, articleId string) (*minipointer.Pointer, error) {
+	return obj.pointerMgr.GetPointer(ctx, articleId, minipointer.TypePointer)
 }

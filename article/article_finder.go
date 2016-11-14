@@ -95,3 +95,21 @@ func (obj *ArticleManager) FindArticleFromQuery(ctx context.Context, q *datastor
 		CursorOne:  cursorOne,
 	}
 }
+
+func (obj *ArticleManager) newCursorFromSrc(cursorSrc string) *datastore.Cursor {
+	c1, e := datastore.DecodeCursor(cursorSrc)
+	if e != nil {
+		return nil
+	} else {
+		return &c1
+	}
+}
+
+func (obj *ArticleManager) makeCursorSrc(founds *datastore.Iterator) string {
+	c, e := founds.Cursor()
+	if e == nil {
+		return c.String()
+	} else {
+		return ""
+	}
+}
