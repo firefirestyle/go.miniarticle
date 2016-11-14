@@ -47,7 +47,7 @@ type ArtTemplate struct {
 	artHandlerObj  *arthundler.ArticleHandler
 	getUserHundler func(context.Context) *userHandler.UserHandler
 	initOpt        func(context.Context)
-	once           *sync.Once
+	m              *sync.Mutex
 }
 
 func NewArtTemplate(config ArtTemplateConfig, getUserHundler func(context.Context) *userHandler.UserHandler) *ArtTemplate {
@@ -61,20 +61,30 @@ func NewArtTemplate(config ArtTemplateConfig, getUserHundler func(context.Contex
 	return &ArtTemplate{
 		config:         config,
 		getUserHundler: getUserHundler,
-		once:           new(sync.Once),
+		initOpt:        func(context.Context) {},
+		m:              new(sync.Mutex),
 	}
 }
 
 func (tmpObj *ArtTemplate) SetInitFunc(f func(ctx context.Context)) {
+	tmpObj.m.Lock()
+	defer tmpObj.m.Unlock()
 	tmpObj.initOpt = f
 }
 
 func (tmpObj *ArtTemplate) InitalizeTemplate(ctx context.Context) {
+
+	if tmpObj.initOpt == nil {
+		return
+	}
+	tmpObj.m.Lock()
+	defer tmpObj.m.Unlock()
 	tmpObj.GetArtHundlerObj(ctx)
 	tmpObj.getUserHundler(ctx)
-	if tmpObj != nil {
+	if tmpObj.initOpt != nil {
 		tmpObj.initOpt(ctx)
 	}
+	tmpObj.initOpt = nil
 }
 
 func (tmpObj *ArtTemplate) CheckLogin(r *http.Request, token string, useIp bool) minisession.CheckLoginIdResult {
@@ -134,9 +144,7 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 	http.HandleFunc(UrlArtNew, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
-		tmpObj.once.Do(func() {
-			tmpObj.InitalizeTemplate(ctx)
-		})
+		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleNew(w, r)
 	})
 
@@ -145,27 +153,21 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 	http.HandleFunc(UrlArtUpdate, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
-		tmpObj.once.Do(func() {
-			tmpObj.InitalizeTemplate(ctx)
-		})
+		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleUpdate(w, r)
 	})
 
 	http.HandleFunc(UrlArtFind, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
-		tmpObj.once.Do(func() {
-			tmpObj.InitalizeTemplate(ctx)
-		})
+		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleFind(w, r)
 	})
 
 	http.HandleFunc(UrlArtFindMe, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
-		tmpObj.once.Do(func() {
-			tmpObj.InitalizeTemplate(ctx)
-		})
+		tmpObj.InitalizeTemplate(ctx)
 		propObj := miniprop.NewMiniPropFromJsonReader(r.Body)
 		loginInfo := tmpObj.CheckLogin(r, propObj.GetString("token", ""), true)
 		if loginInfo.IsLogin == false {
@@ -179,9 +181,7 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 	http.HandleFunc(UrlArtGet, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
-		tmpObj.once.Do(func() {
-			tmpObj.InitalizeTemplate(ctx)
-		})
+		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleGet(w, r)
 	})
 	//UrlArtGet
@@ -189,36 +189,28 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 	http.HandleFunc(UrlArtRequestBlobUrl, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
-		tmpObj.once.Do(func() {
-			tmpObj.InitalizeTemplate(ctx)
-		})
+		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleBlobRequestToken(w, r)
 	})
 
 	http.HandleFunc(UrlArtCallbackBlobUrl, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
-		tmpObj.once.Do(func() {
-			tmpObj.InitalizeTemplate(ctx)
-		})
+		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleBlobUpdated(w, r)
 	})
 
 	http.HandleFunc(UrlArtBlobGet, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
-		tmpObj.once.Do(func() {
-			tmpObj.InitalizeTemplate(ctx)
-		})
+		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleBlobGet(w, r)
 	})
 
 	http.HandleFunc(UrlArtDelete, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
-		tmpObj.once.Do(func() {
-			tmpObj.InitalizeTemplate(ctx)
-		})
+		tmpObj.InitalizeTemplate(ctx)
 		propObj := miniprop.NewMiniPropFromJsonReader(r.Body)
 		loginInfo := tmpObj.CheckLogin(r, propObj.GetString("token", ""), true)
 		if loginInfo.IsLogin == false {
