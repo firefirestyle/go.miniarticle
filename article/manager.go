@@ -97,11 +97,8 @@ func (obj *ArticleManager) hashStr(v string) string {
 	sha1Obj := sha1.New()
 	sha1Obj.Write([]byte(v))
 	articleIdHash := string(base32.StdEncoding.EncodeToString(sha1Obj.Sum(nil)))
-	if obj.config.LengthHash > 5 {
-		leng := len(articleIdHash)
-		if leng > obj.config.LengthHash {
-			articleIdHash = articleIdHash[:leng]
-		}
+	if obj.config.LengthHash > 5 && len(articleIdHash) > obj.config.LengthHash {
+		articleIdHash = articleIdHash[:obj.config.LengthHash]
 	}
 	return articleIdHash
 }
