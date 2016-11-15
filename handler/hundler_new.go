@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	ar "github.com/firefirestyle/go.miniarticle/article"
 	"github.com/firefirestyle/go.miniprop"
 	"google.golang.org/appengine"
 )
@@ -18,6 +19,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	content := inputProp.GetString("content", "")
 	ownerName := inputProp.GetString("ownerName", "")
 	tags := inputProp.GetPropStringList("", "tags", nil)
+	articleId := inputProp.GetPropString("", "articleId", "")
 
 	//
 	//
@@ -29,7 +31,18 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//
-	artObj := obj.GetManager().NewArticle(ctx)
+	var artObj *ar.Article
+	if articleId == "" {
+		var artErr error
+		artObj, artErr = obj.GetManager().NewArticleFromArticleId(ctx, articleId)
+		if artErr == nil {
+			obj.OnNewArtFailed(w, r, obj, inputProp, outputProp)
+			obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, artErr.Error())
+			return
+		}
+	} else {
+		artObj = obj.GetManager().NewArticle(ctx)
+	}
 	artObj.SetTitle(title)
 	artObj.SetProp("target", target)
 	artObj.SetCont(content)

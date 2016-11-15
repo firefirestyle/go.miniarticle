@@ -106,10 +106,35 @@ func (obj *ArticleManager) NewArticle(ctx context.Context) *Article {
 	ret.gaeObject.SecretKey = secretKey
 	ret.gaeObject.ArticleId = articleId
 	//
-	//
-	//
-
 	return ret
+}
+
+func (obj *ArticleManager) NewArticleFromArticleId(ctx context.Context, articleId string) (*Article, error) {
+	created := time.Now()
+	secretKey := ""
+	var key *datastore.Key
+	var art GaeObjectArticle
+	sign := "0"
+
+	articleId = obj.makeArticleId(created, secretKey)
+	key = obj.NewGaeObjectKey(ctx, articleId, sign, "")
+	err := datastore.Get(ctx, key, &art)
+	if err != nil {
+		return nil, err
+	}
+	//
+	ret := new(Article)
+	ret.kind = obj.config.KindArticle
+	ret.gaeObject = &art
+	ret.gaeObjectKey = key
+	ret.gaeObject.RootGroup = obj.config.RootGroup
+	ret.gaeObject.Sign = sign
+	ret.gaeObject.Created = created
+	ret.gaeObject.Updated = created
+	ret.gaeObject.SecretKey = secretKey
+	ret.gaeObject.ArticleId = articleId
+	//
+	return ret, nil
 }
 
 func (obj *ArticleManager) NewGaeObjectKey(ctx context.Context, articleId string, sign string, kind string) *datastore.Key {
