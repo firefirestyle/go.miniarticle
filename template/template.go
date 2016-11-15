@@ -24,15 +24,15 @@ import (
 )
 
 const (
-	UrlArtNew             = "/api/v1/art/new"
-	UrlArtUpdate          = "/api/v1/art/update"
-	UrlArtFind            = "/api/v1/art/find"
-	UrlArtFindMe          = "/api/v1/art/find_with_token"
-	UrlArtGet             = "/api/v1/art/get"
-	UrlArtBlobGet         = "/api/v1/art/getblob"
-	UrlArtRequestBlobUrl  = "/api/v1/art/requestbloburl"
-	UrlArtCallbackBlobUrl = "/api/v1/art/callbackbloburl"
-	UrlArtDelete          = "/api/v1/art/delete"
+	UrlArtNew             = "/new"
+	UrlArtUpdate          = "/update"
+	UrlArtFind            = "/find"
+	UrlArtFindMe          = "/find_with_token"
+	UrlArtGet             = "/get"
+	UrlArtBlobGet         = "/getblob"
+	UrlArtRequestBlobUrl  = "/requestbloburl"
+	UrlArtCallbackBlobUrl = "/callbackbloburl"
+	UrlArtDelete          = "/delete"
 )
 
 type ArtTemplateConfig struct {
@@ -40,6 +40,7 @@ type ArtTemplateConfig struct {
 	KindBaseName               string
 	PrivateKey                 string
 	MemcachedOnlyInBlobPointer bool
+	BasePath                   string
 }
 
 type ArtTemplate struct {
@@ -56,6 +57,10 @@ func NewArtTemplate(config ArtTemplateConfig, getUserHundler func(context.Contex
 	}
 	if config.KindBaseName == "" {
 		config.KindBaseName = "FFSArt"
+	}
+
+	if config.BasePath == "" {
+		config.BasePath = "/api/v1/art"
 	}
 
 	return &ArtTemplate{
@@ -98,7 +103,7 @@ func (tmpObj *ArtTemplate) GetArtHundlerObj(ctx context.Context) *arthundler.Art
 			arthundler.ArticleHandlerConfig{
 				RootGroup:       tmpObj.config.GroupName,
 				ArticleKind:     tmpObj.config.KindBaseName,
-				BlobCallbackUrl: UrlArtCallbackBlobUrl,
+				BlobCallbackUrl: tmpObj.config.BasePath + UrlArtCallbackBlobUrl,
 				BlobSign:        appengine.VersionID(ctx),
 				MemcachedOnly:   tmpObj.config.MemcachedOnlyInBlobPointer,
 				LengthHash:      10,
@@ -142,7 +147,7 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 
 	// art
 	// UrlArtNew
-	http.HandleFunc(UrlArtNew, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(tmpObj.config.BasePath+UrlArtNew, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
 		tmpObj.InitalizeTemplate(ctx)
@@ -151,21 +156,21 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 
 	// art
 	// UrlArtNew
-	http.HandleFunc(UrlArtUpdate, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(tmpObj.config.BasePath+UrlArtUpdate, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
 		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleUpdate(w, r)
 	})
 
-	http.HandleFunc(UrlArtFind, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(tmpObj.config.BasePath+UrlArtFind, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
 		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleFind(w, r)
 	})
 
-	http.HandleFunc(UrlArtFindMe, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(tmpObj.config.BasePath+UrlArtFindMe, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
 		tmpObj.InitalizeTemplate(ctx)
@@ -179,7 +184,7 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 		}
 	})
 
-	http.HandleFunc(UrlArtGet, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(tmpObj.config.BasePath+UrlArtGet, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
 		tmpObj.InitalizeTemplate(ctx)
@@ -187,28 +192,28 @@ func (tmpObj *ArtTemplate) InitArtApi() {
 	})
 	//UrlArtGet
 
-	http.HandleFunc(UrlArtRequestBlobUrl, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(tmpObj.config.BasePath+UrlArtRequestBlobUrl, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
 		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleBlobRequestToken(w, r)
 	})
 
-	http.HandleFunc(UrlArtCallbackBlobUrl, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(tmpObj.config.BasePath+UrlArtCallbackBlobUrl, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
 		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleBlobUpdated(w, r)
 	})
 
-	http.HandleFunc(UrlArtBlobGet, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(tmpObj.config.BasePath+UrlArtBlobGet, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
 		tmpObj.InitalizeTemplate(ctx)
 		tmpObj.GetArtHundlerObj(ctx).HandleBlobGet(w, r)
 	})
 
-	http.HandleFunc(UrlArtDelete, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(tmpObj.config.BasePath+UrlArtDelete, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx := appengine.NewContext(r)
 		tmpObj.InitalizeTemplate(ctx)
