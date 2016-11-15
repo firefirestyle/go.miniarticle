@@ -32,7 +32,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	}
 	//
 	var artObj *ar.Article
-	if articleId == "" {
+	if articleId != "" {
 		var artErr error
 		artObj, artErr = obj.GetManager().NewArticleFromArticleId(ctx, articleId)
 		if artErr == nil {
