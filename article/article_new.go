@@ -3,6 +3,8 @@ package article
 import (
 	"time"
 
+	"errors"
+
 	"github.com/firefirestyle/go.minipointer"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
@@ -119,8 +121,8 @@ func (obj *ArticleManager) NewArticleFromArticleId(ctx context.Context, articleI
 	articleId = obj.makeArticleId(created, secretKey)
 	key = obj.NewGaeObjectKey(ctx, articleId, sign, "")
 	err := datastore.Get(ctx, key, &art)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return nil, errors.New("already found")
 	}
 	//
 	ret := new(Article)

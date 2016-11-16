@@ -35,7 +35,7 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	if articleId != "" {
 		var artErr error
 		artObj, artErr = obj.GetManager().NewArticleFromArticleId(ctx, articleId)
-		if artErr == nil {
+		if artErr != nil {
 			obj.OnNewArtFailed(w, r, obj, inputProp, outputProp)
 			obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, artErr.Error())
 			return
