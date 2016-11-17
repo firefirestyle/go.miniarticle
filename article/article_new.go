@@ -118,7 +118,7 @@ func (obj *ArticleManager) NewArticleFromArticleId(ctx context.Context, articleI
 	var art GaeObjectArticle
 	sign := "0"
 
-	articleId = obj.makeArticleId(created, secretKey)
+	//articleId = obj.makeArticleId(created, secretKey)
 	key = obj.NewGaeObjectKey(ctx, articleId, sign, "")
 	err := datastore.Get(ctx, key, &art)
 	if err == nil {
