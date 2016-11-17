@@ -27,8 +27,11 @@ func (obj *Article) ToMap() map[string]interface{} {
 		TypeUpdated:    obj.gaeObject.Updated.UnixNano(),
 		TypeSecretKey:  obj.gaeObject.SecretKey,
 		TypeIconUrl:    obj.gaeObject.IconUrl,
+		TypeLat:        obj.gaeObject.Lat,
+		TypeLng:        obj.gaeObject.Lng,
 	}
 }
+
 func (obj *Article) ToMapPublicOnly() map[string]interface{} {
 	v := obj.ToMap()
 	delete(v, TypeSecretKey)
@@ -64,6 +67,9 @@ func (userObj *Article) SetParamFromsMap(v map[string]interface{}) error {
 	userObj.gaeObject.Updated = propObj.GetTime(TypeUpdated, time.Now()) //srcLogin
 	userObj.gaeObject.SecretKey = propObj.GetString(TypeSecretKey, "")
 	userObj.gaeObject.IconUrl = propObj.GetString(TypeIconUrl, "")
+	userObj.gaeObject.Lat = propObj.GetPropFloat64("", TypeLat, 0)
+	userObj.gaeObject.Lng = propObj.GetPropFloat64("", TypeLng, 0)
+
 	return nil
 }
 

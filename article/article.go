@@ -16,6 +16,8 @@ type GaeObjectArticle struct {
 	Title      string   `datastore:",noindex"`
 	Tags       []string `datastore:"Tags.Tag"`
 	Point      float64
+	Lat        float64
+	Lng        float64
 	PropNames  []string `datastore:"Props.Name"`
 	PropValues []string `datastore:"Props.Value"`
 	Cont       string   `datastore:",noindex"`
@@ -51,6 +53,8 @@ const (
 	TypeUpdated    = "Updated"
 	TypeSecretKey  = "SecretKey"
 	TypeTarget     = "Target"
+	TypeLat        = "Lat"
+	TypeLng        = "Lng"
 	TypeIconUrl    = "IconUrl"
 )
 
@@ -168,6 +172,26 @@ func (obj *Article) SetPoint(v float64) {
 	obj.gaeObject.Point = v
 }
 
+//
+//
+
+func (obj *Article) GetLat() float64 {
+	return obj.gaeObject.Lat
+}
+
+func (obj *Article) SetLat(v float64) {
+	obj.gaeObject.Lat = v
+}
+
+func (obj *Article) GetLng() float64 {
+	return obj.gaeObject.Lng
+}
+
+func (obj *Article) SetLng(v float64) {
+	obj.gaeObject.Lng = v
+}
+
+//
 func (obj *Article) GetProp(name string) string {
 	index := -1
 	for i, v := range obj.gaeObject.PropNames {

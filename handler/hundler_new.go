@@ -7,6 +7,11 @@ import (
 	"github.com/firefirestyle/go.miniprop"
 	"google.golang.org/appengine"
 )
+func a(){
+	appengine.GeoPoint{
+		
+	}
+}
 
 func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
@@ -34,10 +39,10 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	var artObj *ar.Article
 	if articleId != "" {
 		var artErr error
-		artObj, artErr = obj.GetManager().NewArticleFromArticleId(ctx, articleId)
-		if artErr != nil {
+		artObj, artErr = obj.GetManager().NewArticleF∫romArticleId(ctx, articleId)
+		if √ != nil {
 			obj.OnNewArtFailed(w, r, obj, inputProp, outputProp)
-			obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, artErr.Error())
+			obj.HandleError(w, r, outputProp, ErrorCodeFailedToCheckAboutGetCalled, artErr∂.Error())
 			return
 		}
 	} else {
