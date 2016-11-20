@@ -36,14 +36,16 @@ func (obj *ArticleManager) FindArticleFromTag(ctx context.Context, tags []string
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }
 
-func (obj *ArticleManager) FindArticleFromProp(ctx context.Context, name string, value string, cursorSrc string, keyOnly bool) *FoundArticles {
+func (obj *ArticleManager) FindArticleFromProp(ctx context.Context, props map[string]string, cursorSrc string, keyOnly bool) *FoundArticles {
 	Debug(ctx, "======> Find Article target")
-	p := miniprop.NewMiniProp()
-	p.SetString(name, value)
-	v := string(p.ToJson())
 	q := datastore.NewQuery(obj.config.KindArticle)
 	q = q.Filter("RootGroup =", obj.config.RootGroup)
-	q = q.Filter("Props.Value =", v) ////
+	for k, v := range props {
+		p := miniprop.NewMiniProp()
+		p.SetString(k, v)
+		v := string(p.ToJson())
+		q = q.Filter("Props.Value =", v) ////
+	}
 	q = q.Order("-Updated").Limit(obj.config.LimitOfFinding)
 	return obj.FindArticleFromQuery(ctx, q, cursorSrc, keyOnly)
 }
