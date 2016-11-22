@@ -15,12 +15,17 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 	// load param from json
 	inputProp := obj.GetInputProp(w, r)
 	title := inputProp.GetString("title", "")
-	target := inputProp.GetString("target", "")
+	//z	target := inputProp.GetString("target", "")
 	content := inputProp.GetString("content", "")
 	ownerName := inputProp.GetString("ownerName", "")
 	tags := inputProp.GetPropStringList("", "tags", nil)
 	articleId := inputProp.GetPropString("", "articleId", "")
-
+	//
+	//
+	propKeys := inputProp.GetPropStringList("", "propKeys", make([]string, 0))
+	propValues := inputProp.GetPropStringList("", "propValues", make([]string, 0))
+	lat := inputProp.GetFloat("lat", -999.0)
+	lng := inputProp.GetFloat("lng", -999.0)
 	//
 	//
 	outputProp := miniprop.NewMiniProp()
@@ -44,10 +49,18 @@ func (obj *ArticleHandler) HandleNew(w http.ResponseWriter, r *http.Request) {
 		artObj = obj.GetManager().NewArticle(ctx)
 	}
 	artObj.SetTitle(title)
-	artObj.SetProp("target", target)
 	artObj.SetCont(content)
 	artObj.SetUserName(ownerName)
 	artObj.SetTags(tags)
+	artObj.SetLat(lat)
+	artObj.SetLng(lng)
+	//
+	//
+	if len(propKeys) == len(propValues) {
+		for i, kv := range propKeys {
+			artObj.SetProp(kv, propValues[i])
+		}
+	}
 	//
 	errNew := obj.OnNewBeforeSave(w, r, obj, artObj, inputProp, outputProp)
 	if nil != errNew {
